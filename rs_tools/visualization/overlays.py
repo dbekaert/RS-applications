@@ -162,3 +162,110 @@ def annotate_location(
         bbox=dict(boxstyle="round,pad=0.2", facecolor="black", alpha=0.6,
                   edgecolor="none"),
     )
+
+
+def overlay_geojson(
+    ax,
+    geojson_path: str,
+    data_array,
+    *,
+    category_styles: Optional[Dict[str, Dict[str, Any]]] = None,
+    default_color: str = "yellow",
+    default_linewidth: float = 1.0,
+    default_alpha: float = 0.7,
+    label_field: Optional[str] = None,
+    filter_categories: Optional[List[str]] = None,
+) -> None:
+    """Overlay GeoJSON features on a raster map.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes
+        Axes displaying an ``imshow`` of the raster.
+    geojson_path : str
+        Path to a GeoJSON FeatureCollection file.
+    data_array : xarray.DataArray
+        Geo-referenced DataArray (with ``.rio.crs`` and
+        ``.rio.transform()``).
+    category_styles : dict, optional
+        Mapping from category name → dict with ``color``, ``linewidth``,
+        ``alpha``, ``linestyle`` keys (all optional).
+    default_color, default_linewidth, default_alpha
+        Fallback style for features without a matching category style.
+    label_field : str, optional
+        Property field to use as text labels (e.g. ``"name"``).
+    filter_categories : list[str], optional
+        If set, only features whose ``category`` property is in this
+        list will be drawn.
+    """
+    import json as _json
+
+    with open(geojson_path) as f:
+        fc = _json.load(f)
+
+    transform = data_array.rio.transform()
+    dst_crs = str(data_array.rio.crs)
+    category_styles = category_styles or {}
+
+    # Track which categories have been added to the legend
+    _legend_added: set = set()
+
+    for feat in fc.get("features", []):
+        props = feat.get("properties", {})
+        cat = props.get("category", "")
+
+        if filter_categories and cat not in filter_categories:
+            continue
+
+        style = category_styles.get(cat, {})
+        color = style.get("color", default_color)
+        lw = style.get("linewidth", default_linewidth)
+        alpha = style.get("alpha", default_alpha)
+        ls = style.get("linestyle", "-")
+
+        geom = feat.get("geometry", {})
+        geom_type = geom.get("type", "")
+
+        coord_rings = []
+        if geom_type == "LineString":
+            coord_rings.append(geom["coordinates"])
+        elif geom_type == "Polygon":
+            coord_rings.extend(geom["coordinates"])
+        elif geom_type == "MultiLineString":
+            coord_rings.extend(geom["coordinates"])
+        else:
+            continue
+
+        # Legend label only for the first feature of each category
+        legend_label = cat if cat not in _legend_added else None
+        _legend_added.add(cat)
+
+        for ring in coord_rings:
+            rows, cols = [], []
+            for lon, lat, *_ in ring:
+                r, c = _lonlat_to_pixel(
+                    lon, lat, transform,
+                    src_crs="EPSG:4326", dst_crs=dst_crs,
+                )
+                rows.append(r)
+                cols.append(c)
+            ax.plot(cols, rows, color=color, linewidth=lw,
+                    alpha=alpha, linestyle=ls,
+                    solid_capstyle="round", label=legend_label)
+            legend_label = None  # Only label the first ring
+
+        # Optionally place a text label at the feature centroid
+        if label_field and props.get(label_field):
+            first_ring = coord_rings[0]
+            mid = first_ring[len(first_ring) // 2]
+            r, c = _lonlat_to_pixel(
+                mid[0], mid[1], transform,
+                src_crs="EPSG:4326", dst_crs=dst_crs,
+            )
+            ax.annotate(
+                props[label_field], (c, r),
+                fontsize=6, color=color, alpha=0.9,
+                xytext=(4, 2), textcoords="offset points",
+                bbox=dict(boxstyle="round,pad=0.15",
+                          facecolor="black", alpha=0.5, edgecolor="none"),
+            )

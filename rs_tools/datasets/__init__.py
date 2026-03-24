@@ -20,6 +20,7 @@ from rs_tools.datasets.loader import (
     extract_item_metadata,
     load_dataset,
     load_items,
+    load_passes_from_disk,
     parse_opera_rtc_id,
     subsample_monthly,
 )

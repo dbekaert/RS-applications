@@ -2,12 +2,13 @@
 """Generate the Oosterweel Jupyter notebook programmatically.
 
 Usage:
-    python scripts/gen_oosterweel_notebook.py
+    python scripts/gen_oosterweel_notebook.py [output_path]
 """
 import json
 import sys
 
 cells = []
+
 
 def md(source):
     lines = source.split("\n")
@@ -16,6 +17,7 @@ def md(source):
         "metadata": {},
         "source": [l + "\n" for l in lines[:-1]] + [lines[-1]],
     })
+
 
 def code(source):
     lines = source.split("\n")
@@ -38,17 +40,16 @@ Terrain-Corrected (RTC)** SAR backscatter analysis from Sentinel-1 over the
 
 ## Workflow
 
-1. **Define AOI & temporal range** — bounding box around the construction zone
+1. **Define AOI & working directory** — bounding box + where data lives on disk
 2. **Choose archive** — Terrascope, NASA/ASF, or automatic fallback
 3. **Search** — query the STAC catalogue for available passes
 4. **Coverage analysis** — inspect spatial coverage per pass, filter by threshold
-5. **Load & mosaic** — stream data pass-by-pass (memory-efficient)
-6. **Visualise** — composites, time-series, animated GIF
+5. **Load & mosaic → disk** — stream pass-by-pass, save each to GeoTIFF
+6. **Visualise from disk** — load one pass at a time for composites, GIFs, time-series
 
-## RTC false-colour convention (ASF/HyP3)
-- **R** = sqrt(VV) &ensp;(amplitude range 0.14 – 0.52)
-- **G** = sqrt(VH) &ensp;(amplitude range 0.05 – 0.259)
-- **B** = sqrt(VV) &ensp;(same as R)""")
+All mosaicked passes are saved as GeoTIFF files under `WORKDIR/passes/`.
+Once saved, subsequent visualisation steps load data **one pass at a time**
+from disk, keeping peak memory low regardless of the number of passes.""")
 
 # ── Cell 2: Imports ────────────────────────────────────────────────────────
 code("""\
@@ -71,22 +72,55 @@ from rs_tools.datasets.coverage import (
     filter_by_coverage,
     records_to_items,
 )
-from rs_tools.datasets.loader import load_items, setup_terrascope_auth, LoadedItem
+from rs_tools.datasets.loader import (
+    load_items,
+    load_passes_from_disk,
+    setup_terrascope_auth,
+    LoadedItem,
+)
 from rs_tools.visualization.rtc_composite import rtc_composite
 from rs_tools.visualization.scalebar import add_scalebar
 from rs_tools.visualization.animation import save_timeseries_gif_lazy
 from rs_tools.visualization.overlays import fetch_roads, overlay_roads, annotate_location""")
 
-# ── Cell 3: AOI markdown ──────────────────────────────────────────────────
+# ── Cell 3: Workdir + AOI markdown ────────────────────────────────────────
 md("""\
-## 1. Define area of interest & temporal range
+## 1. Working directory, AOI & temporal range
+
+**`WORKDIR`** is where all data and outputs are stored:
+
+```
+WORKDIR/
+  passes/                ← mosaicked GeoTIFF files (one folder per pass)
+    20220116_0559_DES_T110/
+      VV.tif
+      VH.tif
+      metadata.json
+    20220120_1741_ASC_T037/
+      ...
+  gifs/                  ← animated GIF exports
+  plots/                 ← static figures
+```
+
+Passes are named **chronologically** (`YYYYMMDD_HHMM_ORB_TRRR`) so they
+sort naturally in the filesystem.
+
+If passes already exist on disk from a previous run, the loader will
+**skip** them automatically and only download missing or corrupt ones.
 
 The Oosterweel Link is a major infrastructure project involving tunnels under the
 Scheldt river connecting the left and right banks of Antwerp.""")
 
-# ── Cell 4: AOI code ──────────────────────────────────────────────────────
+# ── Cell 4: Workdir + AOI code ────────────────────────────────────────────
 code("""\
-# Area of interest
+# ── Working directory (all data & outputs stored here) ────────────────────
+WORKDIR = os.path.join(os.getcwd(), "output", "oosterweel")
+os.makedirs(os.path.join(WORKDIR, "passes"), exist_ok=True)
+os.makedirs(os.path.join(WORKDIR, "gifs"), exist_ok=True)
+os.makedirs(os.path.join(WORKDIR, "plots"), exist_ok=True)
+print(f"Working directory: {WORKDIR}")
+
+# ── Area of interest ─────────────────────────────────────────────────────
 bbox_oosterweel = BoundingBox(west=4.30, south=51.17, east=4.48, north=51.27)
 
 # Full Sentinel-1 mission period (OPERA data available from ~Oct 2021)
@@ -232,25 +266,25 @@ print(f"→ {len(selected_items)} burst granules to load")""")
 
 # ── Cell 15: Load markdown ───────────────────────────────────────────────
 md("""\
-## 7. Load & mosaic — pass-by-pass streaming
+## 7. Load, mosaic & save to disk — pass-by-pass streaming
 
 Data is loaded **one satellite pass at a time**: bursts are read eagerly,
-merged into a single mosaic, clipped to the AOI, and then freed from memory
-before the next pass is loaded.
+merged into a single mosaic, clipped to the AOI, **saved as GeoTIFF on
+disk**, and then freed from memory before the next pass is loaded.
 
-This keeps peak memory proportional to a **single pass** (~2–3 bursts × 2
-polarisations) regardless of the total number of passes in the time-series.
+Each pass ends up in its own folder:
+```
+WORKDIR/passes/20220116_0559_DES_T110/
+    VV.tif          ← 30 m GeoTIFF, clipped to AOI
+    VH.tif
+    metadata.json   ← platform, orbit, CRS, pixel size, …
+```
 
-> **Expected output:** A progress line per burst showing platform, orbit
-> direction, and UTC timestamp, followed by mosaic summaries for multi-burst
-> passes.
->
-> ```
->   [1/144] sentinel-1a | DES | 2022-01-16 05:59 UTC
->   [2/144] sentinel-1a | DES | 2022-01-16 05:58 UTC
->   [3/144] sentinel-1a | DES | 2022-01-16 05:58 UTC
->   Mosaicked T110 DES 2022-01-16: 3 bursts → (380, 427)
-> ```""")
+**Incremental**: if passes are already on disk from a previous run, they
+are skipped automatically.  Corrupt or incomplete passes are detected and
+re-downloaded.
+
+> If all passes are already saved, this cell finishes almost instantly.""")
 
 # ── Cell 16: Load code ───────────────────────────────────────────────────
 code("""\
@@ -269,34 +303,50 @@ elif ARCHIVE == "nasa":
     from rs_tools.archives.nasa import configure_gdal_nasa
     configure_gdal_nasa()
 
-# Load data pass-by-pass with built-in mosaicking
+# Load data pass-by-pass, save each pass to disk, free memory
 data = load_items(
     selected_items,
     assets=["VV", "VH"],
     bbox=bbox_oosterweel,
     mosaic=True,
+    output_dir=WORKDIR,   # ← save each pass to WORKDIR/passes/
 )
-print(f"\\n→ Loaded {len(data)} mosaicked passes for Oosterweel")""")
+print(f"\\n→ Saved {len(data)} mosaicked passes to {WORKDIR}/passes/")""")
 
-# ── Cell 17: Inspect markdown ────────────────────────────────────────────
-md("## 8. Inspect loaded items")
+# ── Cell 17: Reload markdown ─────────────────────────────────────────────
+md("""\
+## 8. Reload passes from disk
 
-# ── Cell 18: Inspect code ────────────────────────────────────────────────
+Load pass metadata from the GeoTIFF files saved in the previous step.
+**No pixel data is loaded yet** — only the metadata (date, platform, orbit, CRS).
+Call `item.load()` on individual passes to read pixels when needed.""")
+
+# ── Cell 18: Reload code ─────────────────────────────────────────────────
 code("""\
-print(f"{'#':>3}  {'Platform':<14}  {'Orbit':5}  {'Date':20}  {'CRS':12}  {'Pixel':>6}  {'Shape'}")
-print("-" * 80)
+# Reload pass metadata from disk (pixel data stays on disk until needed)
+data = load_passes_from_disk(WORKDIR)
+print(f"\\nPasses available on disk:")
 for i, item in enumerate(data, 1):
-    vv = item.data.get("VV")
-    shape = str(vv.shape) if vv is not None else "N/A"
+    print(f"  [{i:3d}] {item.label}  →  {item.pass_dir}")""")
+
+# ── Cell 19: Inspect markdown ────────────────────────────────────────────
+md("## 9. Inspect loaded passes")
+
+# ── Cell 20: Inspect code ────────────────────────────────────────────────
+code("""\
+print(f"{'#':>3}  {'Platform':<14}  {'Orbit':5}  {'Date':20}  {'CRS':12}  {'Pixel':>6}  {'On disk'}")
+print("-" * 90)
+for i, item in enumerate(data, 1):
     orb = (item.orbit_direction or "?")[:3].upper()
+    has_data = "loaded" if item.data else "disk"
     print(f"{i:3d}  {item.platform:<14}  {orb:5}  "
           f"{item.datetime:%Y-%m-%d %H:%M UTC}  {item.crs or 'N/A':12}  "
-          f"{item.pixel_size_m or 0:5.0f}m  {shape}")""")
+          f"{item.pixel_size_m or 0:5.0f}m  {has_data}")""")
 
-# ── Cell 19: Timeline markdown ───────────────────────────────────────────
-md("## 9. Acquisition timeline")
+# ── Cell 21: Timeline markdown ───────────────────────────────────────────
+md("## 10. Acquisition timeline")
 
-# ── Cell 20: Timeline code ───────────────────────────────────────────────
+# ── Cell 22: Timeline code ───────────────────────────────────────────────
 code("""\
 fig, ax = plt.subplots(figsize=(14, 3))
 dates = [item.datetime for item in data]
@@ -315,17 +365,20 @@ fig.autofmt_xdate()
 plt.tight_layout()
 plt.show()""")
 
-# ── Cell 21: Composite markdown ──────────────────────────────────────────
+# ── Cell 23: Composite markdown ──────────────────────────────────────────
 md("""\
-## 10. RTC composite — latest scene
+## 11. RTC composite — latest scene
 
-False-colour RTC composite of the most recent pass, with OpenStreetMap road
-network overlay and key construction site labels.""")
+Load the most recent pass **from disk**, render a false-colour RTC
+composite with road overlay and construction site labels, then free
+the pixel data.""")
 
-# ── Cell 22: Composite code ──────────────────────────────────────────────
+# ── Cell 24: Composite code ──────────────────────────────────────────────
 code("""\
 if data:
     item = data[-1]
+    item.load()  # read VV.tif / VH.tif into memory
+
     vv = item.data["VV"].values
     vh = item.data["VH"].values
 
@@ -370,43 +423,59 @@ if data:
     if item.pixel_size_m:
         add_scalebar(ax, item.pixel_size_m)
     plt.tight_layout()
-    plt.show()""")
+    plt.show()
 
-# ── Cell 23: GIF markdown ────────────────────────────────────────────────
-md("## 11. Animated GIF export")
+    item.unload()  # free pixel data from memory""")
 
-# ── Cell 24: GIF code ────────────────────────────────────────────────────
+# ── Cell 25: GIF markdown ────────────────────────────────────────────────
+md("""\
+## 12. Animated GIF export — one frame at a time
+
+Each pass is loaded from disk, rendered as a PNG frame, and
+immediately freed.  Only the small palette-mode PIL frames (~0.5 MB
+each) are kept in memory while writing the GIF.""")
+
+# ── Cell 26: GIF code ────────────────────────────────────────────────────
 code("""\
-gif_dir = os.path.join("output", "gifs")
-os.makedirs(gif_dir, exist_ok=True)
-
-def _rtc_composite_fn(item):
+def _rtc_from_disk(item):
+    \"\"\"Load a pass from disk, create RGB composite, unload, return frame.\"\"\"
+    item.load()
     vv = item.data["VV"].values
     vh = item.data["VH"].values
-    return rtc_composite(vv, vh), item.label
+    rgb = rtc_composite(vv, vh)
+    label = item.label
+    item.unload()
+    return rgb, label
 
 if data:
-    gif_path = os.path.join(gif_dir, "oosterweel_rtc.gif")
+    gif_path = os.path.join(WORKDIR, "gifs", "oosterweel_rtc.gif")
     save_timeseries_gif_lazy(
         data, gif_path,
-        composite_fn=_rtc_composite_fn,
+        composite_fn=_rtc_from_disk,
         title="Oosterweel — OPERA RTC-S1",
         pixel_size_m=data[0].pixel_size_m, fps=2,
     )""")
 
-# ── Cell 25: Slider markdown ─────────────────────────────────────────────
-md("## 12. Interactive time-series slider")
+# ── Cell 27: Slider markdown ─────────────────────────────────────────────
+md("""\
+## 13. Interactive time-series slider
 
-# ── Cell 26: Slider code ─────────────────────────────────────────────────
+Loads each pass from disk on demand when the slider position changes.""")
+
+# ── Cell 28: Slider code ─────────────────────────────────────────────────
 code("""\
 from matplotlib.widgets import Slider
 
 if data:
+    # Pre-load first frame
+    data[0].load()
+    _first_rgb = rtc_composite(data[0].data["VV"].values,
+                                data[0].data["VH"].values)
+    data[0].unload()
+
     fig, ax = plt.subplots(figsize=(9, 9))
     plt.subplots_adjust(bottom=0.15)
 
-    _first_rgb = rtc_composite(data[0].data["VV"].values,
-                                data[0].data["VH"].values)
     im = ax.imshow(_first_rgb, origin="upper")
     ax.set_axis_off()
     ax.set_title(f"Oosterweel — {data[0].label}", fontsize=12)
@@ -417,6 +486,7 @@ if data:
                   fontsize=10, color="white", fontweight="bold",
                   bbox=dict(boxstyle="round,pad=0.3", facecolor="black", alpha=0.7),
                   verticalalignment="bottom")
+    del _first_rgb
 
     ax_slider = fig.add_axes([0.15, 0.04, 0.70, 0.03])
     slider = Slider(ax_slider, "Date", 0, len(data) - 1, valinit=0, valstep=1)
@@ -424,7 +494,9 @@ if data:
     def _update(val):
         idx = int(slider.val)
         item = data[idx]
+        item.load()
         rgb = rtc_composite(item.data["VV"].values, item.data["VH"].values)
+        item.unload()
         im.set_data(rgb)
         ax.set_title(f"Oosterweel — {item.label}", fontsize=12)
         txt.set_text(item.label)
@@ -433,25 +505,66 @@ if data:
     slider.on_changed(_update)
     plt.show()""")
 
-# ── Cell 27: Backscatter markdown ────────────────────────────────────────
+# ── Cell 29: Backscatter markdown ────────────────────────────────────────
 md("""\
-## 13. Backscatter time-series (dB)
+## 14. Backscatter time-series (dB)
 
-Mean VV and VH backscatter over the AOI, converted to decibels.""")
+Mean VV and VH backscatter converted to decibels.  Each pass is loaded
+from disk one at a time.
 
-# ── Cell 28: Backscatter code ────────────────────────────────────────────
+Set **`POINT`** to a `(lon, lat)` tuple to extract the time-series at a
+specific location (nearest pixel).  Set to `None` to compute the spatial
+mean over the entire AOI.""")
+
+# ── Cell 30: Backscatter code ────────────────────────────────────────────
 code("""\
-def mean_backscatter_db(items):
+# ── Set to (lon, lat) for a point time-series, or None for AOI mean ───
+POINT = (4.3925, 51.2340)   # Oosterweel tunnel north entrance
+# POINT = None              # → spatial mean over entire AOI
+
+def backscatter_db(items, point=None, crs="EPSG:4326"):
+    \"\"\"Extract VV/VH backscatter (dB) per pass.
+
+    Parameters
+    ----------
+    items : list[LoadedItem]
+        Passes with data on disk.
+    point : tuple[float, float] or None
+        (lon, lat) for point extraction; None = AOI spatial mean.
+    crs : str
+        CRS of *point* coordinates (default WGS-84).
+    \"\"\"
+    import pyproj
     dates, vv_db, vh_db, sensors = [], [], [], []
     for item in items:
-        vv = item.data["VV"].values
-        vh = item.data["VH"].values
-        vv_mean = np.nanmean(vv[vv > 0])
-        vh_mean = np.nanmean(vh[vh > 0])
-        if vv_mean > 0 and vh_mean > 0:
+        item.load()
+        vv_arr = item.data["VV"]
+        vh_arr = item.data["VH"]
+
+        if point is not None:
+            # Reproject point to the raster CRS, then select nearest pixel
+            raster_crs = vv_arr.rio.crs
+            if raster_crs and str(raster_crs) != crs:
+                transformer = pyproj.Transformer.from_crs(
+                    crs, str(raster_crs), always_xy=True,
+                )
+                px, py = transformer.transform(point[0], point[1])
+            else:
+                px, py = point
+            vv_val = float(vv_arr.sel(x=px, y=py, method="nearest").values)
+            vh_val = float(vh_arr.sel(x=px, y=py, method="nearest").values)
+        else:
+            vv = vv_arr.values
+            vh = vh_arr.values
+            vv_val = float(np.nanmean(vv[vv > 0]))
+            vh_val = float(np.nanmean(vh[vh > 0]))
+
+        item.unload()
+
+        if vv_val > 0 and vh_val > 0:
             dates.append(item.datetime)
-            vv_db.append(10 * np.log10(vv_mean))
-            vh_db.append(10 * np.log10(vh_mean))
+            vv_db.append(10 * np.log10(vv_val))
+            vh_db.append(10 * np.log10(vh_val))
             sensors.append(
                 item.platform.split("-")[1] if "-" in item.platform else item.platform
             )
@@ -459,7 +572,8 @@ def mean_backscatter_db(items):
 
 if data:
     fig, ax = plt.subplots(figsize=(14, 5))
-    dates, vv, vh, sensors = mean_backscatter_db(data)
+    dates, vv, vh, sensors = backscatter_db(data, point=POINT)
+
     ax.plot(dates, vv, "o-", color="steelblue", ms=4, lw=1, label="VV (dB)")
     ax.plot(dates, vh, "s-", color="darkorange", ms=4, lw=1, label="VH (dB)")
     for d, v, s in zip(dates, vv, sensors):
@@ -467,7 +581,10 @@ if data:
                     xytext=(0, 3), textcoords="offset points", color="steelblue")
     ax.set_ylabel("Backscatter (dB)")
     ax.set_xlabel("Acquisition date")
-    ax.set_title("Oosterweel — VV / VH backscatter")
+    if POINT:
+        ax.set_title(f"Oosterweel — VV / VH backscatter at ({POINT[0]:.4f}, {POINT[1]:.4f})")
+    else:
+        ax.set_title("Oosterweel — VV / VH backscatter (AOI mean)")
     ax.legend()
     ax.grid(True, alpha=0.3)
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
@@ -495,7 +612,7 @@ nb = {
     "cells": cells,
 }
 
-path = "/home/bekaertd/RS_applications/Applications/RTC/oosterweel/oosterweel_c.ipynb"
+path = "/home/bekaertd/RS_applications/Applications/RTC/oosterweel/oosterweel_rtc.ipynb"
 if len(sys.argv) > 1:
     path = sys.argv[1]
 

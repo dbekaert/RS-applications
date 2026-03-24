@@ -1,0 +1,4974 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.38881,
+            51.2648817
+          ],
+          [
+            4.3887889,
+            51.2649555
+          ],
+          [
+            4.388732,
+            51.2650058
+          ],
+          [
+            4.3886474,
+            51.2650443
+          ],
+          [
+            4.3885608,
+            51.265071
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 15531986,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "yes",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3887185,
+            51.2605494
+          ],
+          [
+            4.3887257,
+            51.2608931
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 15546559,
+        "name": "Oosterweelbrug",
+        "category": "Oosterweelbrug",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": "1"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3886797,
+            51.2593733
+          ],
+          [
+            4.388687,
+            51.2594837
+          ],
+          [
+            4.3886917,
+            51.2596028
+          ],
+          [
+            4.3886978,
+            51.2598915
+          ],
+          [
+            4.3887073,
+            51.2601539
+          ],
+          [
+            4.3887185,
+            51.2605494
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 15546561,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3864974,
+            51.245305
+          ],
+          [
+            4.3862662,
+            51.2444093
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 15546564,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.396893,
+            51.2424139
+          ],
+          [
+            4.3962333,
+            51.2425107
+          ],
+          [
+            4.3956361,
+            51.2426345
+          ],
+          [
+            4.3952695,
+            51.2427112
+          ],
+          [
+            4.3940748,
+            51.242986
+          ],
+          [
+            4.3920222,
+            51.243405
+          ],
+          [
+            4.3917593,
+            51.2434352
+          ],
+          [
+            4.3916004,
+            51.2434535
+          ],
+          [
+            4.3908585,
+            51.2435134
+          ],
+          [
+            4.3905515,
+            51.2435202
+          ],
+          [
+            4.3891222,
+            51.2434395
+          ],
+          [
+            4.3883761,
+            51.2434064
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 23008386,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "primary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "N101",
+        "operator": "",
+        "oneway": "no",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3865818,
+            51.2456915
+          ],
+          [
+            4.3866403,
+            51.2457969
+          ],
+          [
+            4.3867051,
+            51.2459189
+          ],
+          [
+            4.3867766,
+            51.2461292
+          ],
+          [
+            4.3868217,
+            51.2462823
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 29072765,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3866351,
+            51.2463009
+          ],
+          [
+            4.3866021,
+            51.2461752
+          ],
+          [
+            4.386574,
+            51.2460132
+          ],
+          [
+            4.3865615,
+            51.2459395
+          ],
+          [
+            4.3865818,
+            51.2456915
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 29072768,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3872647,
+            51.2484132
+          ],
+          [
+            4.3871462,
+            51.2482182
+          ],
+          [
+            4.3870944,
+            51.2480285
+          ],
+          [
+            4.3870563,
+            51.2478786
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 29072861,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3888084,
+            51.2648029
+          ],
+          [
+            4.3888074,
+            51.2647429
+          ],
+          [
+            4.3888068,
+            51.2646629
+          ],
+          [
+            4.3888064,
+            51.2645879
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 29074952,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              4.4218627,
+              51.2432561
+            ],
+            [
+              4.4218639,
+              51.2429716
+            ],
+            [
+              4.4218642,
+              51.2429185
+            ],
+            [
+              4.4218646,
+              51.2427145
+            ],
+            [
+              4.4218661,
+              51.242259
+            ],
+            [
+              4.4218673,
+              51.2419071
+            ],
+            [
+              4.4218674,
+              51.2418632
+            ],
+            [
+              4.4218687,
+              51.2417875
+            ],
+            [
+              4.421868,
+              51.2416907
+            ],
+            [
+              4.4226148,
+              51.241691
+            ],
+            [
+              4.4229227,
+              51.2416912
+            ],
+            [
+              4.4235488,
+              51.2416915
+            ],
+            [
+              4.4236137,
+              51.2416915
+            ],
+            [
+              4.4243181,
+              51.2416889
+            ],
+            [
+              4.4244314,
+              51.2416884
+            ],
+            [
+              4.4243419,
+              51.2428454
+            ],
+            [
+              4.4243186,
+              51.2432566
+            ],
+            [
+              4.4242322,
+              51.2432566
+            ],
+            [
+              4.4241337,
+              51.2432566
+            ],
+            [
+              4.424067,
+              51.2432566
+            ],
+            [
+              4.4239489,
+              51.2432566
+            ],
+            [
+              4.4237236,
+              51.2432565
+            ],
+            [
+              4.4235933,
+              51.2432565
+            ],
+            [
+              4.4233714,
+              51.2432564
+            ],
+            [
+              4.4233105,
+              51.2432564
+            ],
+            [
+              4.4226773,
+              51.2432563
+            ],
+            [
+              4.4226193,
+              51.2432563
+            ],
+            [
+              4.4221315,
+              51.2432562
+            ],
+            [
+              4.4220141,
+              51.2432561
+            ],
+            [
+              4.4218627,
+              51.2432561
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 32062391,
+        "name": "Oosterweelcampus Lantis",
+        "category": "Oosterweelcampus (Lantis)",
+        "highway": "",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "commercial",
+        "ref": "",
+        "operator": "Lantis",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              4.4235175,
+              51.2428286
+            ],
+            [
+              4.4235171,
+              51.2430271
+            ],
+            [
+              4.4235381,
+              51.2430271
+            ],
+            [
+              4.4235381,
+              51.2430087
+            ],
+            [
+              4.423592,
+              51.2430087
+            ],
+            [
+              4.423593,
+              51.2431633
+            ],
+            [
+              4.4233732,
+              51.2431631
+            ],
+            [
+              4.4233732,
+              51.243168
+            ],
+            [
+              4.4232326,
+              51.2431679
+            ],
+            [
+              4.4232326,
+              51.2431463
+            ],
+            [
+              4.4226205,
+              51.2431459
+            ],
+            [
+              4.422128,
+              51.2431455
+            ],
+            [
+              4.422128,
+              51.243144
+            ],
+            [
+              4.4220471,
+              51.243144
+            ],
+            [
+              4.422047,
+              51.243158
+            ],
+            [
+              4.4220413,
+              51.243158
+            ],
+            [
+              4.4220414,
+              51.2430998
+            ],
+            [
+              4.4220136,
+              51.2430985
+            ],
+            [
+              4.4219273,
+              51.2430997
+            ],
+            [
+              4.4219275,
+              51.2429726
+            ],
+            [
+              4.4220444,
+              51.2429727
+            ],
+            [
+              4.4220444,
+              51.2429567
+            ],
+            [
+              4.4220954,
+              51.2429567
+            ],
+            [
+              4.4232022,
+              51.2429576
+            ],
+            [
+              4.4232024,
+              51.2428283
+            ],
+            [
+              4.4235175,
+              51.2428286
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 51789984,
+        "name": "Oosterweelcampus - zones Terra/Flora",
+        "category": "Oosterweelcampus (Lantis)",
+        "highway": "",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              4.4221142,
+              51.2422612
+            ],
+            [
+              4.4221141,
+              51.2421725
+            ],
+            [
+              4.4225862,
+              51.2421703
+            ],
+            [
+              4.4226459,
+              51.2421704
+            ],
+            [
+              4.4226463,
+              51.241984
+            ],
+            [
+              4.422646,
+              51.2418714
+            ],
+            [
+              4.4221108,
+              51.2418726
+            ],
+            [
+              4.422112,
+              51.2417867
+            ],
+            [
+              4.4226204,
+              51.2417848
+            ],
+            [
+              4.4227009,
+              51.2417847
+            ],
+            [
+              4.4227007,
+              51.2417552
+            ],
+            [
+              4.4229229,
+              51.2417547
+            ],
+            [
+              4.422923,
+              51.2417703
+            ],
+            [
+              4.4229231,
+              51.2417864
+            ],
+            [
+              4.4235194,
+              51.2417851
+            ],
+            [
+              4.4235199,
+              51.2418732
+            ],
+            [
+              4.4229296,
+              51.2418745
+            ],
+            [
+              4.4229286,
+              51.2421701
+            ],
+            [
+              4.4235602,
+              51.2421695
+            ],
+            [
+              4.4235611,
+              51.2423152
+            ],
+            [
+              4.4235222,
+              51.2423153
+            ],
+            [
+              4.4235222,
+              51.24232
+            ],
+            [
+              4.4229204,
+              51.242321
+            ],
+            [
+              4.4229195,
+              51.2422576
+            ],
+            [
+              4.4228899,
+              51.2422577
+            ],
+            [
+              4.4227336,
+              51.2422581
+            ],
+            [
+              4.4221142,
+              51.2422612
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 51789987,
+        "name": "Oosterweelcampus - zone Aqua",
+        "category": "Oosterweelcampus (Lantis)",
+        "highway": "",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3887257,
+            51.2608931
+          ],
+          [
+            4.3887287,
+            51.2611525
+          ],
+          [
+            4.3887333,
+            51.2615142
+          ],
+          [
+            4.3887366,
+            51.2617796
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 63528404,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.387237,
+            51.2478615
+          ],
+          [
+            4.3872672,
+            51.2479779
+          ],
+          [
+            4.3872943,
+            51.248129
+          ],
+          [
+            4.3872968,
+            51.248162
+          ],
+          [
+            4.3873016,
+            51.2482234
+          ],
+          [
+            4.3872744,
+            51.2483635
+          ],
+          [
+            4.3872647,
+            51.2484132
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 78626630,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3885861,
+            51.256615
+          ],
+          [
+            4.3885915,
+            51.2567197
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 340740556,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3885465,
+            51.2547621
+          ],
+          [
+            4.3885479,
+            51.2548121
+          ],
+          [
+            4.388549,
+            51.2548491
+          ],
+          [
+            4.3885517,
+            51.2549468
+          ],
+          [
+            4.3885594,
+            51.2552168
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 340740557,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3886398,
+            51.2582696
+          ],
+          [
+            4.388643,
+            51.2586273
+          ],
+          [
+            4.3886464,
+            51.2587993
+          ],
+          [
+            4.388648,
+            51.2588813
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 344368422,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3887921,
+            51.2639627
+          ],
+          [
+            4.3887893,
+            51.2638668
+          ],
+          [
+            4.3887851,
+            51.2636971
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 387485139,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3887721,
+            51.2632911
+          ],
+          [
+            4.388765,
+            51.2630331
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 387485142,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3887851,
+            51.2636971
+          ],
+          [
+            4.3887721,
+            51.2632911
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 387485144,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3888064,
+            51.2645879
+          ],
+          [
+            4.3888055,
+            51.2645596
+          ],
+          [
+            4.3888032,
+            51.2644575
+          ],
+          [
+            4.3888024,
+            51.2644252
+          ],
+          [
+            4.3887976,
+            51.2643247
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 387485147,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.38881,
+            51.2648817
+          ],
+          [
+            4.3888084,
+            51.2648029
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 423426619,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3887489,
+            51.2623686
+          ],
+          [
+            4.3887444,
+            51.2620787
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 423433018,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3864974,
+            51.245305
+          ],
+          [
+            4.3865678,
+            51.2455719
+          ],
+          [
+            4.3865818,
+            51.2456915
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 477741369,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3882732,
+            51.2504352
+          ],
+          [
+            4.3881646,
+            51.2502626
+          ],
+          [
+            4.3878851,
+            51.2498274
+          ],
+          [
+            4.3876111,
+            51.2494047
+          ],
+          [
+            4.3874986,
+            51.2492344
+          ],
+          [
+            4.387446,
+            51.2491215
+          ],
+          [
+            4.3874096,
+            51.2490014
+          ],
+          [
+            4.3873706,
+            51.2488592
+          ],
+          [
+            4.3873454,
+            51.2487694
+          ],
+          [
+            4.3873124,
+            51.2486168
+          ],
+          [
+            4.3872762,
+            51.248462
+          ],
+          [
+            4.3872647,
+            51.2484132
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 481215605,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3882732,
+            51.2504352
+          ],
+          [
+            4.3883411,
+            51.2505554
+          ],
+          [
+            4.388385,
+            51.2506647
+          ],
+          [
+            4.388406,
+            51.2507186
+          ],
+          [
+            4.388436,
+            51.2508584
+          ],
+          [
+            4.3884444,
+            51.2509047
+          ],
+          [
+            4.3884501,
+            51.2509752
+          ],
+          [
+            4.3884528,
+            51.2510549
+          ],
+          [
+            4.3884512,
+            51.2511181
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 507824621,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              4.3790173,
+              51.2437322
+            ],
+            [
+              4.3828161,
+              51.2436842
+            ],
+            [
+              4.3833411,
+              51.2436861
+            ],
+            [
+              4.3843308,
+              51.2437205
+            ],
+            [
+              4.3851958,
+              51.2438053
+            ],
+            [
+              4.3853903,
+              51.2438179
+            ],
+            [
+              4.3856545,
+              51.243807
+            ],
+            [
+              4.3859814,
+              51.2438165
+            ],
+            [
+              4.3863165,
+              51.2440713
+            ],
+            [
+              4.3868053,
+              51.2441717
+            ],
+            [
+              4.3872285,
+              51.2442566
+            ],
+            [
+              4.3875401,
+              51.2442907
+            ],
+            [
+              4.3879325,
+              51.2443069
+            ],
+            [
+              4.3883412,
+              51.2442701
+            ],
+            [
+              4.3894945,
+              51.2440175
+            ],
+            [
+              4.3893102,
+              51.2436746
+            ],
+            [
+              4.3896711,
+              51.2436091
+            ],
+            [
+              4.3903224,
+              51.2436066
+            ],
+            [
+              4.3906574,
+              51.2435984
+            ],
+            [
+              4.3963773,
+              51.2425229
+            ],
+            [
+              4.3981267,
+              51.2419012
+            ],
+            [
+              4.3982743,
+              51.2418575
+            ],
+            [
+              4.3984231,
+              51.2417862
+            ],
+            [
+              4.3986243,
+              51.2416552
+            ],
+            [
+              4.3959378,
+              51.2412676
+            ],
+            [
+              4.3944402,
+              51.2411956
+            ],
+            [
+              4.3922039,
+              51.24104
+            ],
+            [
+              4.3893285,
+              51.2401706
+            ],
+            [
+              4.3848467,
+              51.2405379
+            ],
+            [
+              4.382281,
+              51.2404531
+            ],
+            [
+              4.380041,
+              51.2406784
+            ],
+            [
+              4.3776479,
+              51.2406549
+            ],
+            [
+              4.3692308,
+              51.240942
+            ],
+            [
+              4.3710866,
+              51.2416059
+            ],
+            [
+              4.37119,
+              51.2417858
+            ],
+            [
+              4.3754591,
+              51.2415366
+            ],
+            [
+              4.3759804,
+              51.2415825
+            ],
+            [
+              4.3784422,
+              51.2418618
+            ],
+            [
+              4.3787491,
+              51.241991
+            ],
+            [
+              4.3789671,
+              51.2422575
+            ],
+            [
+              4.3790173,
+              51.2437322
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 932346255,
+        "name": "Oosterweelknooppunt",
+        "category": "Oosterweelknooppunt (construction zone)",
+        "highway": "",
+        "construction": "transportation",
+        "tunnel": "",
+        "landuse": "construction",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3861209,
+            51.243874
+          ],
+          [
+            4.3853931,
+            51.243864
+          ],
+          [
+            4.3839323,
+            51.243743
+          ],
+          [
+            4.3822037,
+            51.2436552
+          ],
+          [
+            4.3813652,
+            51.243667
+          ],
+          [
+            4.3807158,
+            51.2436433
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 932346264,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "proposed",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3861714,
+            51.2440534
+          ],
+          [
+            4.3861209,
+            51.243874
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1173876513,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.386219,
+            51.2442301
+          ],
+          [
+            4.386203,
+            51.2441724
+          ],
+          [
+            4.386183,
+            51.2441004
+          ],
+          [
+            4.3861714,
+            51.2440534
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1173876514,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3807158,
+            51.2436433
+          ],
+          [
+            4.3803691,
+            51.2435762
+          ],
+          [
+            4.3800602,
+            51.2434223
+          ],
+          [
+            4.3797954,
+            51.2431816
+          ],
+          [
+            4.3797071,
+            51.2428501
+          ],
+          [
+            4.379745,
+            51.2418792
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1234049309,
+        "name": "Oosterweelsteenweg",
+        "category": "Road under construction",
+        "highway": "construction",
+        "construction": "primary",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "N101",
+        "operator": "Agentschap Wegen en Verkeer",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.379745,
+            51.2418792
+          ],
+          [
+            4.379763,
+            51.2417858
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1254299903,
+        "name": "Oosterweelsteenweg",
+        "category": "Road under construction",
+        "highway": "construction",
+        "construction": "primary",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "N101",
+        "operator": "Agentschap Wegen en Verkeer",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3885366,
+            51.2544382
+          ],
+          [
+            4.3885415,
+            51.2545859
+          ],
+          [
+            4.3885465,
+            51.2547621
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1281098757,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3885281,
+            51.2541832
+          ],
+          [
+            4.3885366,
+            51.2544382
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1281098758,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.38852,
+            51.2538285
+          ],
+          [
+            4.3885281,
+            51.2541832
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1281098759,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3885167,
+            51.2535709
+          ],
+          [
+            4.38852,
+            51.2538285
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1281098760,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3885007,
+            51.2528785
+          ],
+          [
+            4.3885167,
+            51.2535709
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1281098761,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3884512,
+            51.2511181
+          ],
+          [
+            4.388454,
+            51.2512174
+          ],
+          [
+            4.3885007,
+            51.2528785
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1281098762,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3887444,
+            51.2620787
+          ],
+          [
+            4.3887366,
+            51.2617796
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1281098767,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.388765,
+            51.2630331
+          ],
+          [
+            4.3887489,
+            51.2623686
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1281098768,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3885594,
+            51.2552168
+          ],
+          [
+            4.3885638,
+            51.2555777
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1281098769,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3886298,
+            51.2577975
+          ],
+          [
+            4.3886398,
+            51.2582696
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1281098770,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.388648,
+            51.2588813
+          ],
+          [
+            4.3886621,
+            51.2590784
+          ],
+          [
+            4.3886797,
+            51.2593733
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1281098771,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3886112,
+            51.257343
+          ],
+          [
+            4.3886298,
+            51.2577975
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1281098772,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3885915,
+            51.2567197
+          ],
+          [
+            4.3886112,
+            51.257343
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1281098773,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3885638,
+            51.2555777
+          ],
+          [
+            4.3885698,
+            51.2558994
+          ],
+          [
+            4.3885861,
+            51.256615
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1281098774,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              4.3888361,
+              51.2598678
+            ],
+            [
+              4.3888418,
+              51.26014
+            ],
+            [
+              4.388826,
+              51.26014
+            ],
+            [
+              4.3888272,
+              51.2601808
+            ],
+            [
+              4.388845,
+              51.2601809
+            ],
+            [
+              4.3888444,
+              51.2602139
+            ],
+            [
+              4.3888607,
+              51.2602145
+            ],
+            [
+              4.3888672,
+              51.2605647
+            ],
+            [
+              4.3885673,
+              51.2605675
+            ],
+            [
+              4.3885614,
+              51.2602772
+            ],
+            [
+              4.3882022,
+              51.2602806
+            ],
+            [
+              4.3835457,
+              51.2603245
+            ],
+            [
+              4.3835545,
+              51.2606166
+            ],
+            [
+              4.3832581,
+              51.2606177
+            ],
+            [
+              4.3832477,
+              51.2602687
+            ],
+            [
+              4.3832602,
+              51.2602664
+            ],
+            [
+              4.3832258,
+              51.2587551
+            ],
+            [
+              4.3602812,
+              51.2589721
+            ],
+            [
+              4.3602605,
+              51.258073
+            ],
+            [
+              4.3634139,
+              51.2580435
+            ],
+            [
+              4.3634029,
+              51.2573686
+            ],
+            [
+              4.3602502,
+              51.2573992
+            ],
+            [
+              4.3602074,
+              51.2558207
+            ],
+            [
+              4.3809826,
+              51.2556329
+            ],
+            [
+              4.3809587,
+              51.2550921
+            ],
+            [
+              4.3781379,
+              51.2551182
+            ],
+            [
+              4.378137,
+              51.2551109
+            ],
+            [
+              4.3781046,
+              51.2550932
+            ],
+            [
+              4.3780933,
+              51.2550928
+            ],
+            [
+              4.3780841,
+              51.2547462
+            ],
+            [
+              4.3780784,
+              51.254746
+            ],
+            [
+              4.3780742,
+              51.2547452
+            ],
+            [
+              4.3780712,
+              51.2547433
+            ],
+            [
+              4.3780703,
+              51.2547402
+            ],
+            [
+              4.3780706,
+              51.254727
+            ],
+            [
+              4.378073,
+              51.2547247
+            ],
+            [
+              4.3780762,
+              51.2547237
+            ],
+            [
+              4.3780805,
+              51.254723
+            ],
+            [
+              4.3781602,
+              51.2547227
+            ],
+            [
+              4.3783906,
+              51.2547217
+            ],
+            [
+              4.3784219,
+              51.2547321
+            ],
+            [
+              4.3816564,
+              51.2547035
+            ],
+            [
+              4.3820068,
+              51.2545835
+            ],
+            [
+              4.3819973,
+              51.2544435
+            ],
+            [
+              4.381648,
+              51.2543319
+            ],
+            [
+              4.3783895,
+              51.2543625
+            ],
+            [
+              4.3783573,
+              51.2543763
+            ],
+            [
+              4.3781537,
+              51.2543779
+            ],
+            [
+              4.3780757,
+              51.2543785
+            ],
+            [
+              4.3780675,
+              51.2543781
+            ],
+            [
+              4.3780631,
+              51.2543747
+            ],
+            [
+              4.3780607,
+              51.2543628
+            ],
+            [
+              4.3780614,
+              51.2543585
+            ],
+            [
+              4.3780663,
+              51.2543549
+            ],
+            [
+              4.3780749,
+              51.2543532
+            ],
+            [
+              4.3780717,
+              51.2542257
+            ],
+            [
+              4.3780627,
+              51.2542234
+            ],
+            [
+              4.378058,
+              51.25422
+            ],
+            [
+              4.3780583,
+              51.2542058
+            ],
+            [
+              4.3780609,
+              51.2542028
+            ],
+            [
+              4.3780664,
+              51.2542008
+            ],
+            [
+              4.3781503,
+              51.2541999
+            ],
+            [
+              4.3781451,
+              51.2539256
+            ],
+            [
+              4.3780607,
+              51.253925
+            ],
+            [
+              4.3780539,
+              51.2539215
+            ],
+            [
+              4.3780511,
+              51.2539165
+            ],
+            [
+              4.3780521,
+              51.2539046
+            ],
+            [
+              4.3780565,
+              51.2539001
+            ],
+            [
+              4.3780641,
+              51.2538987
+            ],
+            [
+              4.3780572,
+              51.2536831
+            ],
+            [
+              4.3780611,
+              51.2536813
+            ],
+            [
+              4.3837268,
+              51.2536341
+            ],
+            [
+              4.3837122,
+              51.2529131
+            ],
+            [
+              4.380831,
+              51.2529359
+            ],
+            [
+              4.3728622,
+              51.2530136
+            ],
+            [
+              4.3666806,
+              51.2530708
+            ],
+            [
+              4.3664821,
+              51.2530726
+            ],
+            [
+              4.3629354,
+              51.2531055
+            ],
+            [
+              4.3621973,
+              51.2531116
+            ],
+            [
+              4.3609269,
+              51.2506094
+            ],
+            [
+              4.3605852,
+              51.2506127
+            ],
+            [
+              4.3605783,
+              51.2502378
+            ],
+            [
+              4.3609071,
+              51.2502378
+            ],
+            [
+              4.3620989,
+              51.2488407
+            ],
+            [
+              4.3746994,
+              51.2487311
+            ],
+            [
+              4.3764406,
+              51.2487159
+            ],
+            [
+              4.3858224,
+              51.2486343
+            ],
+            [
+              4.3858091,
+              51.2479059
+            ],
+            [
+              4.3858196,
+              51.2478887
+            ],
+            [
+              4.3858445,
+              51.2478779
+            ],
+            [
+              4.3877271,
+              51.2477043
+            ],
+            [
+              4.3885848,
+              51.2486328
+            ],
+            [
+              4.3905558,
+              51.250802
+            ],
+            [
+              4.3915775,
+              51.250442
+            ],
+            [
+              4.393682,
+              51.2496741
+            ],
+            [
+              4.3917722,
+              51.247583
+            ],
+            [
+              4.3917003,
+              51.2474974
+            ],
+            [
+              4.3950344,
+              51.2456301
+            ],
+            [
+              4.3949989,
+              51.2456069
+            ],
+            [
+              4.3953508,
+              51.2454062
+            ],
+            [
+              4.4020885,
+              51.2440093
+            ],
+            [
+              4.4046849,
+              51.2447212
+            ],
+            [
+              4.4052213,
+              51.2452451
+            ],
+            [
+              4.4058348,
+              51.2464329
+            ],
+            [
+              4.4060031,
+              51.2467769
+            ],
+            [
+              4.4020257,
+              51.2514268
+            ],
+            [
+              4.4014035,
+              51.2521532
+            ],
+            [
+              4.3948468,
+              51.2598158
+            ],
+            [
+              4.3888361,
+              51.2598678
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1390564703,
+        "name": "Oosterweeleiland",
+        "category": "Oosterweeleiland",
+        "highway": "",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3887976,
+            51.2643247
+          ],
+          [
+            4.3887921,
+            51.2639627
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1390564706,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3862662,
+            51.2444093
+          ],
+          [
+            4.386219,
+            51.2442301
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1396699097,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "secondary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3883761,
+            51.2434064
+          ],
+          [
+            4.3881919,
+            51.2434173
+          ],
+          [
+            4.3879969,
+            51.2434362
+          ],
+          [
+            4.3878271,
+            51.2434699
+          ],
+          [
+            4.387511,
+            51.2435672
+          ],
+          [
+            4.3871858,
+            51.2437004
+          ],
+          [
+            4.3870044,
+            51.2437603
+          ],
+          [
+            4.3867787,
+            51.243803
+          ],
+          [
+            4.3865602,
+            51.2438272
+          ],
+          [
+            4.3861209,
+            51.243874
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1396699098,
+        "name": "Oosterweelsteenweg",
+        "category": "Oosterweelsteenweg",
+        "highway": "primary",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "N101",
+        "operator": "",
+        "oneway": "no",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3638438,
+            51.2343529
+          ],
+          [
+            4.3669668,
+            51.2370353
+          ],
+          [
+            4.3685668,
+            51.2380673
+          ],
+          [
+            4.3698186,
+            51.2387392
+          ],
+          [
+            4.3718002,
+            51.2396731
+          ],
+          [
+            4.373212,
+            51.240145
+          ],
+          [
+            4.3745297,
+            51.2405311
+          ],
+          [
+            4.3763362,
+            51.2409555
+          ],
+          [
+            4.3780407,
+            51.2412532
+          ],
+          [
+            4.3785034,
+            51.2413272
+          ],
+          [
+            4.3790009,
+            51.2413959
+          ],
+          [
+            4.3794784,
+            51.2414542
+          ],
+          [
+            4.3800799,
+            51.241519
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 78629969,
+        "name": "Scheldetunnel",
+        "category": "Scheldetunnel",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "yes",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "",
+        "oneway": "yes",
+        "layer": "-1"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.4292374,
+            51.2365097
+          ],
+          [
+            4.4276038,
+            51.2373878
+          ],
+          [
+            4.4261841,
+            51.238084
+          ],
+          [
+            4.4248831,
+            51.2386158
+          ],
+          [
+            4.4236092,
+            51.2390262
+          ],
+          [
+            4.4222604,
+            51.2393814
+          ],
+          [
+            4.4212138,
+            51.2395377
+          ],
+          [
+            4.4187321,
+            51.240061
+          ],
+          [
+            4.4175193,
+            51.2403921
+          ],
+          [
+            4.410654,
+            51.241766
+          ],
+          [
+            4.4084465,
+            51.2421724
+          ],
+          [
+            4.4073583,
+            51.242346
+          ],
+          [
+            4.4061005,
+            51.2424836
+          ],
+          [
+            4.4051414,
+            51.2425173
+          ],
+          [
+            4.4040178,
+            51.2425359
+          ],
+          [
+            4.4025135,
+            51.2424528
+          ],
+          [
+            4.4010892,
+            51.2422823
+          ],
+          [
+            4.3999106,
+            51.2421699
+          ],
+          [
+            4.3989262,
+            51.2421138
+          ],
+          [
+            4.3976155,
+            51.2420939
+          ],
+          [
+            4.3960459,
+            51.242173
+          ],
+          [
+            4.3949376,
+            51.2423285
+          ],
+          [
+            4.3937991,
+            51.2425341
+          ],
+          [
+            4.3929645,
+            51.2426546
+          ],
+          [
+            4.3923395,
+            51.2427514
+          ],
+          [
+            4.3912758,
+            51.2427777
+          ],
+          [
+            4.3910121,
+            51.2427781
+          ],
+          [
+            4.3894335,
+            51.2427278
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 78669777,
+        "name": "Kanaaltunnels",
+        "category": "Kanaaltunnels",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "yes",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "",
+        "oneway": "yes",
+        "layer": "-1"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3895007,
+            51.2424702
+          ],
+          [
+            4.3901116,
+            51.2424641
+          ],
+          [
+            4.3920859,
+            51.2425842
+          ],
+          [
+            4.3929294,
+            51.2426072
+          ],
+          [
+            4.393787,
+            51.2425115
+          ],
+          [
+            4.3949283,
+            51.242311
+          ],
+          [
+            4.3960483,
+            51.2421436
+          ],
+          [
+            4.3968987,
+            51.2421015
+          ],
+          [
+            4.3976267,
+            51.2420694
+          ],
+          [
+            4.3989211,
+            51.2420869
+          ],
+          [
+            4.3999173,
+            51.2421425
+          ],
+          [
+            4.4011166,
+            51.2422593
+          ],
+          [
+            4.4025202,
+            51.2424245
+          ],
+          [
+            4.4039974,
+            51.2425099
+          ],
+          [
+            4.4051731,
+            51.2424927
+          ],
+          [
+            4.4060994,
+            51.2424571
+          ],
+          [
+            4.4073315,
+            51.2423219
+          ],
+          [
+            4.408442,
+            51.242147
+          ],
+          [
+            4.4106272,
+            51.2417425
+          ],
+          [
+            4.4175124,
+            51.2403689
+          ],
+          [
+            4.4187242,
+            51.2400411
+          ],
+          [
+            4.4211945,
+            51.23952
+          ],
+          [
+            4.4228177,
+            51.2390131
+          ],
+          [
+            4.4237445,
+            51.2386545
+          ],
+          [
+            4.4246095,
+            51.2382833
+          ],
+          [
+            4.4257731,
+            51.2377171
+          ],
+          [
+            4.4271469,
+            51.2369617
+          ],
+          [
+            4.4287922,
+            51.236135
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 78669787,
+        "name": "Kanaaltunnels",
+        "category": "Kanaaltunnels",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "yes",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "",
+        "oneway": "yes",
+        "layer": "-1"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3894506,
+            51.2426028
+          ],
+          [
+            4.3912616,
+            51.2426291
+          ],
+          [
+            4.3920091,
+            51.2426298
+          ],
+          [
+            4.3929316,
+            51.2426191
+          ],
+          [
+            4.3937968,
+            51.2425183
+          ],
+          [
+            4.3949321,
+            51.2423203
+          ],
+          [
+            4.3960469,
+            51.2421582
+          ],
+          [
+            4.3969012,
+            51.2421127
+          ],
+          [
+            4.3976286,
+            51.2420801
+          ],
+          [
+            4.3989172,
+            51.2421005
+          ],
+          [
+            4.3999074,
+            51.2421571
+          ],
+          [
+            4.401111,
+            51.2422701
+          ],
+          [
+            4.4025207,
+            51.2424386
+          ],
+          [
+            4.4040064,
+            51.2425227
+          ],
+          [
+            4.4051649,
+            51.2425042
+          ],
+          [
+            4.4061043,
+            51.2424691
+          ],
+          [
+            4.4073453,
+            51.2423336
+          ],
+          [
+            4.4084332,
+            51.2421639
+          ],
+          [
+            4.4106406,
+            51.2417526
+          ],
+          [
+            4.4175178,
+            51.2403842
+          ],
+          [
+            4.4187248,
+            51.2400532
+          ],
+          [
+            4.421208,
+            51.2395296
+          ],
+          [
+            4.4218388,
+            51.2394118
+          ],
+          [
+            4.4222461,
+            51.2393733
+          ],
+          [
+            4.4229358,
+            51.2393983
+          ],
+          [
+            4.4236308,
+            51.2394775
+          ],
+          [
+            4.4244286,
+            51.2396934
+          ],
+          [
+            4.4251021,
+            51.2399533
+          ],
+          [
+            4.4260407,
+            51.2405118
+          ],
+          [
+            4.4267973,
+            51.2413216
+          ],
+          [
+            4.4270718,
+            51.2418903
+          ],
+          [
+            4.4272946,
+            51.2425668
+          ],
+          [
+            4.4272678,
+            51.2439369
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 78669796,
+        "name": "Kanaaltunnels",
+        "category": "Kanaaltunnels",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "yes",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "",
+        "oneway": "yes",
+        "layer": "-2"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              4.3558996,
+              51.2280059
+            ],
+            [
+              4.3559008,
+              51.2282239
+            ],
+            [
+              4.3559507,
+              51.2282575
+            ],
+            [
+              4.3579986,
+              51.2307293
+            ],
+            [
+              4.3576175,
+              51.2308622
+            ],
+            [
+              4.3586471,
+              51.2319753
+            ],
+            [
+              4.3586959,
+              51.2320661
+            ],
+            [
+              4.3587127,
+              51.2321725
+            ],
+            [
+              4.3585884,
+              51.234096
+            ],
+            [
+              4.3598152,
+              51.2340854
+            ],
+            [
+              4.3598447,
+              51.2339959
+            ],
+            [
+              4.3598081,
+              51.2338355
+            ],
+            [
+              4.3597776,
+              51.2335997
+            ],
+            [
+              4.3597617,
+              51.2334249
+            ],
+            [
+              4.3597346,
+              51.2332596
+            ],
+            [
+              4.359715,
+              51.2331261
+            ],
+            [
+              4.3597046,
+              51.2330658
+            ],
+            [
+              4.3598949,
+              51.2330003
+            ],
+            [
+              4.3599584,
+              51.2331816
+            ],
+            [
+              4.3600261,
+              51.2336331
+            ],
+            [
+              4.3600705,
+              51.2338217
+            ],
+            [
+              4.3600944,
+              51.2357408
+            ],
+            [
+              4.3600046,
+              51.23579
+            ],
+            [
+              4.3600112,
+              51.2365838
+            ],
+            [
+              4.3600058,
+              51.2370675
+            ],
+            [
+              4.3626167,
+              51.2370759
+            ],
+            [
+              4.3692308,
+              51.240942
+            ],
+            [
+              4.3776479,
+              51.2406549
+            ],
+            [
+              4.3751897,
+              51.2373814
+            ],
+            [
+              4.3769007,
+              51.2370987
+            ],
+            [
+              4.3769306,
+              51.2353848
+            ],
+            [
+              4.3757987,
+              51.2353915
+            ],
+            [
+              4.373495,
+              51.2338101
+            ],
+            [
+              4.372859,
+              51.2335119
+            ],
+            [
+              4.372135,
+              51.2333742
+            ],
+            [
+              4.3713033,
+              51.2334534
+            ],
+            [
+              4.3699157,
+              51.2341006
+            ],
+            [
+              4.3694984,
+              51.2342667
+            ],
+            [
+              4.3689083,
+              51.2344537
+            ],
+            [
+              4.3684589,
+              51.2343878
+            ],
+            [
+              4.3675513,
+              51.2340803
+            ],
+            [
+              4.3665007,
+              51.2337054
+            ],
+            [
+              4.3659276,
+              51.233208
+            ],
+            [
+              4.3653583,
+              51.2327008
+            ],
+            [
+              4.3647667,
+              51.2321093
+            ],
+            [
+              4.3637296,
+              51.231171
+            ],
+            [
+              4.3629884,
+              51.23014
+            ],
+            [
+              4.3629943,
+              51.2297642
+            ],
+            [
+              4.3629251,
+              51.2278398
+            ],
+            [
+              4.3592078,
+              51.2279363
+            ],
+            [
+              4.3563586,
+              51.2280028
+            ],
+            [
+              4.3558996,
+              51.2280059
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 625482886,
+        "name": "Werf Scheldetunnel",
+        "category": "Scheldetunnel construction site",
+        "highway": "",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "construction",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3800361,
+            51.241655
+          ],
+          [
+            4.3794131,
+            51.2415858
+          ],
+          [
+            4.3789389,
+            51.2415301
+          ],
+          [
+            4.37845,
+            51.2414703
+          ],
+          [
+            4.3779821,
+            51.2414021
+          ],
+          [
+            4.3762097,
+            51.2410983
+          ],
+          [
+            4.3744237,
+            51.240675
+          ],
+          [
+            4.3731203,
+            51.2402942
+          ],
+          [
+            4.3716328,
+            51.23981
+          ],
+          [
+            4.3696572,
+            51.2388674
+          ],
+          [
+            4.3683642,
+            51.2381739
+          ],
+          [
+            4.3667624,
+            51.237125
+          ],
+          [
+            4.3636394,
+            51.234438
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 704287270,
+        "name": "Scheldetunnel",
+        "category": "Scheldetunnel",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "yes",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "",
+        "oneway": "yes",
+        "layer": "-1"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.4268668,
+            51.2441012
+          ],
+          [
+            4.4268493,
+            51.2427313
+          ],
+          [
+            4.4268366,
+            51.2422767
+          ],
+          [
+            4.4267283,
+            51.2419537
+          ],
+          [
+            4.4265627,
+            51.241531
+          ],
+          [
+            4.4259569,
+            51.2408307
+          ],
+          [
+            4.4251452,
+            51.240322
+          ],
+          [
+            4.4247061,
+            51.2400667
+          ],
+          [
+            4.4241654,
+            51.2398653
+          ],
+          [
+            4.4233054,
+            51.2396488
+          ],
+          [
+            4.4227431,
+            51.239573
+          ],
+          [
+            4.4221218,
+            51.2395408
+          ],
+          [
+            4.4217235,
+            51.239536
+          ],
+          [
+            4.4212246,
+            51.2395444
+          ],
+          [
+            4.418737,
+            51.240069
+          ],
+          [
+            4.4175247,
+            51.2404012
+          ],
+          [
+            4.4106675,
+            51.2417761
+          ],
+          [
+            4.4084586,
+            51.2421823
+          ],
+          [
+            4.4073686,
+            51.2423602
+          ],
+          [
+            4.4061069,
+            51.2424984
+          ],
+          [
+            4.4051384,
+            51.2425307
+          ],
+          [
+            4.4040102,
+            51.2425487
+          ],
+          [
+            4.4025154,
+            51.2424676
+          ],
+          [
+            4.4010914,
+            51.2422955
+          ],
+          [
+            4.3999128,
+            51.2421827
+          ],
+          [
+            4.3989169,
+            51.2421302
+          ],
+          [
+            4.3976163,
+            51.242107
+          ],
+          [
+            4.3960424,
+            51.2421889
+          ],
+          [
+            4.394947,
+            51.2423378
+          ],
+          [
+            4.3938013,
+            51.2425484
+          ],
+          [
+            4.3929581,
+            51.2426633
+          ],
+          [
+            4.3922992,
+            51.2427717
+          ],
+          [
+            4.3916092,
+            51.2428745
+          ],
+          [
+            4.3911972,
+            51.2428944
+          ],
+          [
+            4.3894194,
+            51.2428735
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 932337383,
+        "name": "Kanaaltunnels",
+        "category": "Kanaaltunnels",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "yes",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "",
+        "oneway": "yes",
+        "layer": "-2"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3608132,
+            51.2311625
+          ],
+          [
+            4.3627728,
+            51.2330868
+          ],
+          [
+            4.3639923,
+            51.2342966
+          ],
+          [
+            4.3671237,
+            51.2369726
+          ],
+          [
+            4.3686701,
+            51.2379861
+          ],
+          [
+            4.3699087,
+            51.238642
+          ],
+          [
+            4.371899,
+            51.2395795
+          ],
+          [
+            4.3732863,
+            51.24003
+          ],
+          [
+            4.3745841,
+            51.2404179
+          ],
+          [
+            4.3764102,
+            51.2408554
+          ],
+          [
+            4.3780821,
+            51.2411478
+          ],
+          [
+            4.3785673,
+            51.241216
+          ],
+          [
+            4.3790398,
+            51.2412754
+          ],
+          [
+            4.3794932,
+            51.2413244
+          ],
+          [
+            4.3796448,
+            51.2413388
+          ],
+          [
+            4.3797462,
+            51.2413471
+          ],
+          [
+            4.379838,
+            51.2413516
+          ],
+          [
+            4.3799263,
+            51.2413523
+          ],
+          [
+            4.3800034,
+            51.2413509
+          ],
+          [
+            4.3800947,
+            51.2413456
+          ],
+          [
+            4.3803079,
+            51.2413082
+          ],
+          [
+            4.3813554,
+            51.2413387
+          ],
+          [
+            4.3823187,
+            51.2413863
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 932410264,
+        "name": "Scheldetunnel",
+        "category": "Scheldetunnel",
+        "highway": "construction",
+        "construction": "cycleway",
+        "tunnel": "yes",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": "-1"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3606848,
+            51.2312148
+          ],
+          [
+            4.3626299,
+            51.2331423
+          ],
+          [
+            4.3638438,
+            51.2343529
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1040289648,
+        "name": "Scheldetunnel",
+        "category": "Scheldetunnel",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "yes",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "",
+        "oneway": "yes",
+        "layer": "-1"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3636394,
+            51.234438
+          ],
+          [
+            4.3624186,
+            51.2332306
+          ],
+          [
+            4.3604926,
+            51.2312927
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1040289649,
+        "name": "Scheldetunnel",
+        "category": "Scheldetunnel",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "yes",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "",
+        "oneway": "yes",
+        "layer": "-1"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              4.3667154,
+              51.2080016
+            ],
+            [
+              4.3684688,
+              51.208673
+            ],
+            [
+              4.3671235,
+              51.2099901
+            ],
+            [
+              4.3672509,
+              51.210087
+            ],
+            [
+              4.3650599,
+              51.2123005
+            ],
+            [
+              4.3646992,
+              51.2127077
+            ],
+            [
+              4.3640112,
+              51.2133936
+            ],
+            [
+              4.3634726,
+              51.2138125
+            ],
+            [
+              4.3628243,
+              51.2142657
+            ],
+            [
+              4.361529,
+              51.2149698
+            ],
+            [
+              4.3614273,
+              51.2150911
+            ],
+            [
+              4.3612931,
+              51.2154124
+            ],
+            [
+              4.3612602,
+              51.2156381
+            ],
+            [
+              4.3611102,
+              51.2166663
+            ],
+            [
+              4.3610623,
+              51.2177166
+            ],
+            [
+              4.3609613,
+              51.2187486
+            ],
+            [
+              4.3610426,
+              51.2189862
+            ],
+            [
+              4.3613577,
+              51.2195588
+            ],
+            [
+              4.3611164,
+              51.2196285
+            ],
+            [
+              4.3601616,
+              51.2196214
+            ],
+            [
+              4.3601676,
+              51.2193834
+            ],
+            [
+              4.3600706,
+              51.2191219
+            ],
+            [
+              4.360261,
+              51.2187
+            ],
+            [
+              4.3602626,
+              51.2165677
+            ],
+            [
+              4.3602303,
+              51.2164666
+            ],
+            [
+              4.3600246,
+              51.2164769
+            ],
+            [
+              4.3563764,
+              51.2168054
+            ],
+            [
+              4.3554409,
+              51.2169554
+            ],
+            [
+              4.3546764,
+              51.217166
+            ],
+            [
+              4.3539519,
+              51.2174965
+            ],
+            [
+              4.3534401,
+              51.2178014
+            ],
+            [
+              4.35302,
+              51.2181612
+            ],
+            [
+              4.3525427,
+              51.2187314
+            ],
+            [
+              4.3523924,
+              51.2189923
+            ],
+            [
+              4.3523133,
+              51.2192632
+            ],
+            [
+              4.3522326,
+              51.2192609
+            ],
+            [
+              4.3522236,
+              51.2185723
+            ],
+            [
+              4.3512335,
+              51.218557
+            ],
+            [
+              4.3510589,
+              51.2185605
+            ],
+            [
+              4.3504275,
+              51.2185514
+            ],
+            [
+              4.3500955,
+              51.2185786
+            ],
+            [
+              4.3496777,
+              51.2185772
+            ],
+            [
+              4.3490146,
+              51.2185642
+            ],
+            [
+              4.3486139,
+              51.218653
+            ],
+            [
+              4.3483422,
+              51.2190041
+            ],
+            [
+              4.3483326,
+              51.2193066
+            ],
+            [
+              4.3477128,
+              51.2193055
+            ],
+            [
+              4.3479862,
+              51.2185298
+            ],
+            [
+              4.3480109,
+              51.21787
+            ],
+            [
+              4.3482327,
+              51.2156973
+            ],
+            [
+              4.3504752,
+              51.2158208
+            ],
+            [
+              4.3497975,
+              51.215458
+            ],
+            [
+              4.3475984,
+              51.2140082
+            ],
+            [
+              4.347306,
+              51.2138154
+            ],
+            [
+              4.3471941,
+              51.2137515
+            ],
+            [
+              4.3453001,
+              51.2125636
+            ],
+            [
+              4.34323,
+              51.2117994
+            ],
+            [
+              4.3436485,
+              51.2116225
+            ],
+            [
+              4.344684,
+              51.2112205
+            ],
+            [
+              4.3463721,
+              51.2119692
+            ],
+            [
+              4.3486886,
+              51.2127797
+            ],
+            [
+              4.3494891,
+              51.2130188
+            ],
+            [
+              4.3499798,
+              51.2128082
+            ],
+            [
+              4.3519771,
+              51.2131945
+            ],
+            [
+              4.3530135,
+              51.2133046
+            ],
+            [
+              4.3566263,
+              51.2130972
+            ],
+            [
+              4.3567904,
+              51.2127986
+            ],
+            [
+              4.3582212,
+              51.2125912
+            ],
+            [
+              4.3607425,
+              51.2120415
+            ],
+            [
+              4.3628587,
+              51.2112745
+            ],
+            [
+              4.3646207,
+              51.2101475
+            ],
+            [
+              4.3652369,
+              51.2095163
+            ],
+            [
+              4.3667154,
+              51.2080016
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 932389254,
+        "name": "Werf knooppunt Antwerpen-West",
+        "category": "Junction construction site",
+        "highway": "",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "construction",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              4.3524432,
+              51.2202385
+            ],
+            [
+              4.352513,
+              51.2229692
+            ],
+            [
+              4.3527764,
+              51.2233642
+            ],
+            [
+              4.3532104,
+              51.22386
+            ],
+            [
+              4.3535833,
+              51.2244889
+            ],
+            [
+              4.3541791,
+              51.2250903
+            ],
+            [
+              4.3564592,
+              51.2262278
+            ],
+            [
+              4.3582246,
+              51.2268116
+            ],
+            [
+              4.3592796,
+              51.2274086
+            ],
+            [
+              4.359275,
+              51.2274978
+            ],
+            [
+              4.3592078,
+              51.2279363
+            ],
+            [
+              4.3563586,
+              51.2280028
+            ],
+            [
+              4.3558996,
+              51.2280059
+            ],
+            [
+              4.3550758,
+              51.22802
+            ],
+            [
+              4.3410738,
+              51.2283264
+            ],
+            [
+              4.3410676,
+              51.2281132
+            ],
+            [
+              4.347406,
+              51.2279444
+            ],
+            [
+              4.3489641,
+              51.2279151
+            ],
+            [
+              4.3496594,
+              51.2278283
+            ],
+            [
+              4.3504441,
+              51.2276178
+            ],
+            [
+              4.3512373,
+              51.2272272
+            ],
+            [
+              4.3518055,
+              51.2267565
+            ],
+            [
+              4.3521162,
+              51.2263059
+            ],
+            [
+              4.3523105,
+              51.2258157
+            ],
+            [
+              4.3522799,
+              51.2251341
+            ],
+            [
+              4.3521974,
+              51.2245216
+            ],
+            [
+              4.352198,
+              51.2234173
+            ],
+            [
+              4.3521507,
+              51.2202349
+            ],
+            [
+              4.3524432,
+              51.2202385
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 932402702,
+        "name": "Werf knooppunt Sint-Anna Linkeroever",
+        "category": "Junction construction site",
+        "highway": "",
+        "construction": "",
+        "tunnel": "",
+        "landuse": "construction",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3353553,
+            51.2763848
+          ],
+          [
+            4.3359482,
+            51.2767242
+          ],
+          [
+            4.3360202,
+            51.2767993
+          ],
+          [
+            4.336056,
+            51.2769825
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 955374296,
+        "name": "Scheldelaan",
+        "category": "Road under construction",
+        "highway": "construction",
+        "construction": "cycleway",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "",
+        "operator": "",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3354149,
+            51.2763461
+          ],
+          [
+            4.3357983,
+            51.2765659
+          ],
+          [
+            4.3359028,
+            51.2766274
+          ],
+          [
+            4.3359777,
+            51.2766754
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1231664067,
+        "name": "Scheldelaan",
+        "category": "Road under construction",
+        "highway": "construction",
+        "construction": "primary",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "N101",
+        "operator": "Agentschap Wegen en Verkeer",
+        "oneway": "",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.379745,
+            51.2418792
+          ],
+          [
+            4.3780499,
+            51.241717
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1254299901,
+        "name": "Scheldelaan",
+        "category": "Road under construction",
+        "highway": "construction",
+        "construction": "primary",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "N101",
+        "operator": "Agentschap Wegen en Verkeer",
+        "oneway": "yes",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3780751,
+            51.2416278
+          ],
+          [
+            4.379763,
+            51.2417858
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1254299902,
+        "name": "Scheldelaan",
+        "category": "Road under construction",
+        "highway": "construction",
+        "construction": "primary",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "N101",
+        "operator": "Agentschap Wegen en Verkeer",
+        "oneway": "yes",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.4423121,
+            51.2292378
+          ],
+          [
+            4.443385,
+            51.2287742
+          ],
+          [
+            4.4444632,
+            51.2281729
+          ],
+          [
+            4.4460779,
+            51.2271113
+          ],
+          [
+            4.4472635,
+            51.2262816
+          ],
+          [
+            4.4480735,
+            51.2257407
+          ],
+          [
+            4.4490069,
+            51.2247765
+          ],
+          [
+            4.4493556,
+            51.2240844
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1259684321,
+        "name": "Bypass R1",
+        "category": "Bypass R1",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "Agentschap Wegen en Verkeer",
+        "oneway": "yes",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.4293001,
+            51.2586141
+          ],
+          [
+            4.428708,
+            51.2568088
+          ],
+          [
+            4.4281232,
+            51.2558319
+          ],
+          [
+            4.4277638,
+            51.255053
+          ],
+          [
+            4.4274956,
+            51.2544184
+          ],
+          [
+            4.4272274,
+            51.2536093
+          ],
+          [
+            4.4269484,
+            51.2524879
+          ],
+          [
+            4.4267821,
+            51.2510911
+          ],
+          [
+            4.4268358,
+            51.2503121
+          ],
+          [
+            4.4270074,
+            51.2493384
+          ],
+          [
+            4.4271362,
+            51.2485795
+          ],
+          [
+            4.4272756,
+            51.2468536
+          ],
+          [
+            4.4273035,
+            51.246294
+          ],
+          [
+            4.4273829,
+            51.2459201
+          ],
+          [
+            4.4275049,
+            51.2454678
+          ],
+          [
+            4.4275744,
+            51.2452013
+          ],
+          [
+            4.4277705,
+            51.2445101
+          ],
+          [
+            4.4278117,
+            51.2438352
+          ],
+          [
+            4.4278384,
+            51.2430525
+          ],
+          [
+            4.4278043,
+            51.2427938
+          ],
+          [
+            4.4277275,
+            51.2425299
+          ],
+          [
+            4.4276767,
+            51.2422801
+          ],
+          [
+            4.427493,
+            51.2420139
+          ],
+          [
+            4.4273963,
+            51.2417055
+          ],
+          [
+            4.4270549,
+            51.2406938
+          ],
+          [
+            4.4267712,
+            51.2401255
+          ],
+          [
+            4.4265505,
+            51.2396747
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1259684323,
+        "name": "Bypass R1",
+        "category": "Bypass R1",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "Agentschap Wegen en Verkeer",
+        "oneway": "yes",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.4513243,
+            51.21886
+          ],
+          [
+            4.4514906,
+            51.2197167
+          ],
+          [
+            4.451496,
+            51.220597
+          ],
+          [
+            4.4510561,
+            51.2218805
+          ],
+          [
+            4.4504392,
+            51.2230933
+          ],
+          [
+            4.4495112,
+            51.224622
+          ],
+          [
+            4.4484383,
+            51.2257508
+          ],
+          [
+            4.4478804,
+            51.2261419
+          ],
+          [
+            4.4467807,
+            51.2269131
+          ],
+          [
+            4.4443452,
+            51.2284148
+          ],
+          [
+            4.4432509,
+            51.2290295
+          ],
+          [
+            4.4420692,
+            51.2295781
+          ],
+          [
+            4.4402489,
+            51.230804
+          ],
+          [
+            4.4380045,
+            51.2323634
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1436678437,
+        "name": "Bypass R1",
+        "category": "Bypass R1",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "Agentschap Wegen en Verkeer",
+        "oneway": "yes",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3559254,
+            51.2274286
+          ],
+          [
+            4.3569731,
+            51.2279174
+          ],
+          [
+            4.3579266,
+            51.2285362
+          ],
+          [
+            4.3586718,
+            51.2291832
+          ],
+          [
+            4.3606848,
+            51.2312148
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 78629963,
+        "name": "",
+        "category": "Motorway R1 (under construction)",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "",
+        "oneway": "yes",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3894194,
+            51.2428735
+          ],
+          [
+            4.3884092,
+            51.2427846
+          ],
+          [
+            4.3867869,
+            51.2426567
+          ],
+          [
+            4.3862803,
+            51.2425396
+          ],
+          [
+            4.3853815,
+            51.2423808
+          ],
+          [
+            4.3843897,
+            51.2422118
+          ],
+          [
+            4.3827425,
+            51.241976
+          ],
+          [
+            4.3800361,
+            51.241655
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 78629966,
+        "name": "R1",
+        "category": "Motorway R1 (under construction)",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "",
+        "oneway": "yes",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3800799,
+            51.241519
+          ],
+          [
+            4.3823127,
+            51.2417574
+          ],
+          [
+            4.3830642,
+            51.2418377
+          ],
+          [
+            4.386349,
+            51.2423309
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 704287271,
+        "name": "R1",
+        "category": "Motorway R1 (under construction)",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "",
+        "oneway": "yes",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3894335,
+            51.2427278
+          ],
+          [
+            4.3889849,
+            51.2427065
+          ],
+          [
+            4.3872792,
+            51.2425972
+          ],
+          [
+            4.3862803,
+            51.2425396
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 932337382,
+        "name": "R1",
+        "category": "Motorway R1 (under construction)",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "",
+        "oneway": "yes",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.386349,
+            51.2423309
+          ],
+          [
+            4.3895007,
+            51.2424702
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 932338690,
+        "name": "R1",
+        "category": "Motorway R1 (under construction)",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "",
+        "oneway": "yes",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.386349,
+            51.2423309
+          ],
+          [
+            4.3872153,
+            51.2424744
+          ],
+          [
+            4.3894506,
+            51.2426028
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 932338691,
+        "name": "R1",
+        "category": "Motorway R1 (under construction)",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "",
+        "oneway": "yes",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3604926,
+            51.2312927
+          ],
+          [
+            4.3583452,
+            51.2293392
+          ],
+          [
+            4.3575099,
+            51.2286361
+          ],
+          [
+            4.3568104,
+            51.228171
+          ],
+          [
+            4.3563821,
+            51.227971
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1464159511,
+        "name": "",
+        "category": "Motorway R1 (under construction)",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "",
+        "oneway": "yes",
+        "layer": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.3563821,
+            51.227971
+          ],
+          [
+            4.3559708,
+            51.2277225
+          ],
+          [
+            4.3557494,
+            51.2276217
+          ]
+        ]
+      },
+      "properties": {
+        "osm_id": 1464159514,
+        "name": "",
+        "category": "Motorway R1 (under construction)",
+        "highway": "construction",
+        "construction": "motorway",
+        "tunnel": "",
+        "landuse": "",
+        "ref": "R1",
+        "operator": "",
+        "oneway": "yes",
+        "layer": ""
+      }
+    }
+  ]
+}

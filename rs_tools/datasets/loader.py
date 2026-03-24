@@ -6,6 +6,7 @@ DataArrays.  Requires ``rioxarray`` (optional dependency).
 
 from __future__ import annotations
 
+import json as _json
 import logging
 import os
 import re
@@ -36,7 +37,12 @@ _SENSOR_NAMES = {
 
 @dataclass
 class LoadedItem:
-    """A loaded STAC item with geo-located data and metadata."""
+    """A loaded STAC item with geo-located data and metadata.
+
+    When *output_dir* is used in :func:`load_items`, data arrays are
+    saved to GeoTIFF files on disk and freed from memory.  Use
+    :meth:`load` / :meth:`unload` to page data in and out.
+    """
 
     id: str
     datetime: datetime
@@ -46,6 +52,7 @@ class LoadedItem:
     crs: Optional[str] = None
     pixel_size_m: Optional[float] = None
     stac_item: Optional[Dict[str, Any]] = field(default=None, repr=False)
+    pass_dir: Optional[str] = field(default=None, repr=False)
 
     @property
     def label(self) -> str:
@@ -55,6 +62,133 @@ class LoadedItem:
             parts.append(self.orbit_direction[:3].upper())
         parts.append(self.datetime.strftime("%Y-%m-%d %H:%M UTC"))
         return " | ".join(parts)
+
+    # ── Disk persistence ──────────────────────────────────────────────
+
+    def _pass_key(self) -> str:
+        """Build a chronological directory name for this pass."""
+        dt_str = self.datetime.strftime("%Y%m%d_%H%M")
+        orb = (self.orbit_direction or "UNK")[:3].upper()
+        # Extract track from the mosaic id (e.g. T110_2022-01-16_3bursts)
+        track_str = ""
+        if self.id and self.id.startswith("T"):
+            track_str = self.id.split("_")[0]  # "T110"
+        else:
+            parsed = parse_opera_rtc_id(self.id)
+            if parsed.get("track") is not None:
+                track_str = f"T{parsed['track']:03d}"
+        parts = [dt_str, orb]
+        if track_str:
+            parts.append(track_str)
+        return "_".join(parts)
+
+    def save(self, output_dir: str) -> str:
+        """Write data arrays as GeoTIFF + metadata JSON to *output_dir*.
+
+        Returns the per-pass directory path.  After saving, call
+        :meth:`unload` to free memory while keeping *pass_dir* for
+        later :meth:`load`.
+        """
+        pass_key = self._pass_key()
+        pass_dir = os.path.join(output_dir, "passes", pass_key)
+        os.makedirs(pass_dir, exist_ok=True)
+
+        for asset_name, da in self.data.items():
+            tif_path = os.path.join(pass_dir, f"{asset_name}.tif")
+            da.rio.to_raster(tif_path)
+
+        meta = {
+            "id": self.id,
+            "datetime": self.datetime.isoformat(),
+            "platform": self.platform,
+            "orbit_direction": self.orbit_direction,
+            "crs": self.crs,
+            "pixel_size_m": self.pixel_size_m,
+            "assets": list(self.data.keys()),
+        }
+        with open(os.path.join(pass_dir, "metadata.json"), "w") as f:
+            _json.dump(meta, f, indent=2)
+
+        self.pass_dir = pass_dir
+        return pass_dir
+
+    def load(self) -> "LoadedItem":
+        """Load data from disk into memory.
+
+        No-op if data is already loaded or *pass_dir* is not set.
+        Raises ``RuntimeError`` if the on-disk files are corrupt.
+        """
+        if not self.pass_dir or self.data:
+            return self
+
+        import rioxarray  # noqa: F401
+
+        meta_path = os.path.join(self.pass_dir, "metadata.json")
+        if os.path.exists(meta_path):
+            with open(meta_path) as f:
+                meta = _json.load(f)
+            assets = meta.get("assets", [])
+        else:
+            assets = [
+                os.path.splitext(f)[0]
+                for f in sorted(os.listdir(self.pass_dir))
+                if f.endswith(".tif")
+            ]
+
+        for asset_name in assets:
+            tif_path = os.path.join(self.pass_dir, f"{asset_name}.tif")
+            if os.path.exists(tif_path):
+                da = rioxarray.open_rasterio(tif_path, masked=True)
+                if "band" in da.dims and da.sizes["band"] == 1:
+                    da = da.squeeze("band", drop=True)
+                da = da.load()
+                # Basic corruption check: must have non-zero shape and
+                # not be entirely NaN/zero.
+                if da.size == 0:
+                    raise RuntimeError(
+                        f"Corrupt GeoTIFF (empty): {tif_path}"
+                    )
+                self.data[asset_name] = da
+        return self
+
+    def is_valid_on_disk(self) -> bool:
+        """Check whether the on-disk files are present and readable.
+
+        Returns *False* if metadata.json is missing, any expected
+        GeoTIFF is missing or cannot be opened by rasterio.
+        """
+        if not self.pass_dir or not os.path.isdir(self.pass_dir):
+            return False
+        meta_path = os.path.join(self.pass_dir, "metadata.json")
+        if not os.path.isfile(meta_path):
+            return False
+        try:
+            with open(meta_path) as f:
+                meta = _json.load(f)
+        except (_json.JSONDecodeError, OSError):
+            return False
+        for asset_name in meta.get("assets", []):
+            tif_path = os.path.join(self.pass_dir, f"{asset_name}.tif")
+            if not os.path.isfile(tif_path) or os.path.getsize(tif_path) == 0:
+                return False
+            # Quick header check via rasterio
+            try:
+                import rasterio
+                with rasterio.open(tif_path) as src:
+                    if src.width == 0 or src.height == 0:
+                        return False
+            except Exception:
+                return False
+        return True
+
+    def unload(self) -> None:
+        """Free data arrays from memory (keeps *pass_dir* for reloading)."""
+        for da in self.data.values():
+            try:
+                da.close()
+            except Exception:
+                pass
+        self.data.clear()
 
 
 def parse_opera_rtc_id(item_id: str) -> Dict[str, Any]:
@@ -411,6 +545,7 @@ def load_items(
     bbox: Optional[BoundingBox] = None,
     mosaic: bool = False,
     chunks: Optional[dict] = "auto",
+    output_dir: Optional[str] = None,
 ) -> List[LoadedItem]:
     """Load COG assets from STAC items into geo-located DataArrays.
 
@@ -419,6 +554,11 @@ def load_items(
     than the entire time-series.  Within each pass, burst-level
     assets are loaded eagerly, optionally merged (when *mosaic* is
     True), clipped to *bbox*, and then freed before the next pass.
+
+    When *output_dir* is provided, each mosaicked pass is written to
+    disk as GeoTIFF files and then freed from memory.  The returned
+    ``LoadedItem`` objects have their pixel data cleared (``data={}``);
+    call ``item.load()`` to page data back in from disk when needed.
 
     For items that cannot be grouped by pass (non-OPERA data), each
     item is treated as its own "pass" — the streaming logic still
@@ -439,6 +579,11 @@ def load_items(
         Chunk specification for Dask-backed lazy loading.
         ``"auto"`` (default) lets xarray/dask choose chunk sizes.
         Set to ``None`` to load data eagerly into memory.
+    output_dir : str, optional
+        When set, write each mosaicked pass to this directory as
+        GeoTIFF files (``<output_dir>/passes/<pass_key>/VV.tif``
+        etc.) and free pixel data from memory.  Call
+        ``item.load()`` to read data back when needed.
 
     Returns
     -------
@@ -456,11 +601,61 @@ def load_items(
     total_items = len(items)
     item_counter = 0
 
+    # Build an index of existing valid passes on disk so we can skip them.
+    _existing: Dict[str, LoadedItem] = {}
+    if output_dir:
+        passes_dir = os.path.join(output_dir, "passes")
+        if os.path.isdir(passes_dir):
+            for entry in os.listdir(passes_dir):
+                meta_path = os.path.join(passes_dir, entry, "metadata.json")
+                if not os.path.isfile(meta_path):
+                    continue
+                try:
+                    with open(meta_path) as _f:
+                        _m = _json.load(_f)
+                    _item = LoadedItem(
+                        id=_m["id"],
+                        datetime=datetime.fromisoformat(_m["datetime"]),
+                        platform=_m["platform"],
+                        orbit_direction=_m.get("orbit_direction"),
+                        data={},
+                        crs=_m.get("crs"),
+                        pixel_size_m=_m.get("pixel_size_m"),
+                        pass_dir=os.path.join(passes_dir, entry),
+                    )
+                    if _item.is_valid_on_disk():
+                        _existing[entry] = _item
+                except Exception:
+                    pass
+        if _existing:
+            print(f"  Found {len(_existing)} existing valid passes on disk")
+
     result: List[LoadedItem] = []
 
     sorted_keys = sorted(pass_groups.keys())
     for pass_idx, pass_key in enumerate(sorted_keys):
         pass_items = pass_groups[pass_key]
+
+        # Predict the pass_key that save() would produce, so we can
+        # check whether this pass already exists on disk.
+        if output_dir:
+            _probe_meta = extract_item_metadata(pass_items[0])
+            _probe_dt = _probe_meta.get("datetime")
+            _probe_orb = _probe_meta.get("orbit_direction")
+            _probe_parsed = _probe_meta.get("parsed", {})
+            if _probe_dt is not None:
+                _dt_str = _probe_dt.strftime("%Y%m%d_%H%M")
+                _orb_str = (_probe_orb or "UNK")[:3].upper()
+                _track = _probe_parsed.get("track")
+                _key_parts = [_dt_str, _orb_str]
+                if _track is not None:
+                    _key_parts.append(f"T{_track:03d}")
+                _predicted_key = "_".join(_key_parts)
+                if _predicted_key in _existing:
+                    print(f"  ⏭ {_predicted_key}: already on disk, skipping")
+                    result.append(_existing[_predicted_key])
+                    item_counter += len(pass_items)
+                    continue
 
         # Load each burst in this pass eagerly — no Dask chunks — so
         # that only one pass worth of data is in memory at a time.
@@ -492,8 +687,19 @@ def load_items(
                     except Exception:
                         pass
                 bli.data.clear()
+            # Save to disk and free memory when output_dir is set
+            if output_dir:
+                for m_item in mosaicked:
+                    pdir = m_item.save(output_dir)
+                    m_item.unload()
+                    print(f"    → saved to {pdir}")
             result.extend(mosaicked)
         else:
+            if output_dir:
+                for bli in burst_loaded:
+                    pdir = bli.save(output_dir)
+                    bli.unload()
+                    print(f"    → saved to {pdir}")
             result.extend(burst_loaded)
 
         # Brief pause between passes to be kind to the server
@@ -524,6 +730,67 @@ def _group_items_by_pass(
             key = "unknown"
         groups[key].append(item)
     return dict(groups)
+
+
+def load_passes_from_disk(output_dir: str) -> List[LoadedItem]:
+    """Reload pass metadata from a previous :func:`load_items` run.
+
+    Returns ``LoadedItem`` objects with ``data={}`` (no pixel data in
+    memory).  Call ``item.load()`` to page data in from the GeoTIFF
+    files on disk when you need it, and ``item.unload()`` to free
+    memory afterwards.
+
+    Parameters
+    ----------
+    output_dir : str
+        The same directory that was passed as *output_dir* to
+        :func:`load_items`.
+
+    Returns
+    -------
+    list[LoadedItem]
+        Metadata-only items sorted by datetime.
+    """
+    passes_dir = os.path.join(output_dir, "passes")
+    if not os.path.isdir(passes_dir):
+        return []
+
+    items: List[LoadedItem] = []
+    n_corrupt = 0
+    for entry in sorted(os.listdir(passes_dir)):
+        pass_dir = os.path.join(passes_dir, entry)
+        meta_path = os.path.join(pass_dir, "metadata.json")
+        if not os.path.isfile(meta_path):
+            continue
+        try:
+            with open(meta_path) as f:
+                meta = _json.load(f)
+        except (_json.JSONDecodeError, OSError):
+            n_corrupt += 1
+            logger.warning("Corrupt metadata in %s, skipping", pass_dir)
+            continue
+        item = LoadedItem(
+            id=meta["id"],
+            datetime=datetime.fromisoformat(meta["datetime"]),
+            platform=meta["platform"],
+            orbit_direction=meta.get("orbit_direction"),
+            data={},
+            crs=meta.get("crs"),
+            pixel_size_m=meta.get("pixel_size_m"),
+            pass_dir=pass_dir,
+        )
+        if not item.is_valid_on_disk():
+            n_corrupt += 1
+            logger.warning("Corrupt or incomplete pass in %s, skipping", pass_dir)
+            continue
+        items.append(item)
+
+    items.sort(key=lambda x: x.datetime)
+    msg = f"Found {len(items)} saved passes in {passes_dir}"
+    if n_corrupt:
+        msg += f" ({n_corrupt} corrupt/incomplete skipped)"
+    print(msg)
+    return items
 
 
 def subsample_monthly(
@@ -705,6 +972,7 @@ def load_dataset(
     monthly: bool = False,
     interval_months: int = 1,
     chunks: Optional[dict] = "auto",
+    output_dir: Optional[str] = None,
 ) -> List[LoadedItem]:
     """Search and load a known dataset as geo-located data.
 
@@ -745,6 +1013,9 @@ def load_dataset(
         Chunk specification for Dask-backed lazy loading.
         ``"auto"`` (default) lets xarray/dask choose chunk sizes.
         Set to ``None`` to load data eagerly into memory.
+    output_dir : str, optional
+        When set, write each mosaicked pass to this directory and
+        free pixel data from memory.  See :func:`load_items`.
 
     Returns
     -------
@@ -769,7 +1040,7 @@ def load_dataset(
             return []
         return _configure_and_load(
             archive, items, assets, bbox, mosaic, chunks,
-            ds_info, short_name,
+            ds_info, short_name, output_dir=output_dir,
         )
 
     collections = ds_info.archive_collections.get(archive, [])
@@ -801,7 +1072,7 @@ def load_dataset(
         return []
 
     return _configure_and_load(archive, items, assets, bbox, mosaic, chunks,
-                               ds_info, short_name)
+                               ds_info, short_name, output_dir=output_dir)
 
 
 def _configure_and_load(
@@ -813,6 +1084,7 @@ def _configure_and_load(
     chunks,
     ds_info=None,
     short_name: str = "",
+    output_dir: Optional[str] = None,
 ) -> List["LoadedItem"]:
     """Configure GDAL auth for *archive*, resolve assets, and load items."""
 
@@ -850,4 +1122,5 @@ def _configure_and_load(
             if "image" in v.get("type", "") or k in ("VV", "VH", "data")
         ]
 
-    return load_items(items, assets=assets, bbox=bbox, mosaic=mosaic, chunks=chunks)
+    return load_items(items, assets=assets, bbox=bbox, mosaic=mosaic, chunks=chunks,
+                       output_dir=output_dir)
