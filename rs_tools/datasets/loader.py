@@ -6,6 +6,7 @@ DataArrays.  Requires ``rioxarray`` (optional dependency).
 
 from __future__ import annotations
 
+import gc
 import json as _json
 import logging
 import os
@@ -441,6 +442,12 @@ def load_stac_asset(
             else:
                 raise
 
+    # Keep a reference to the raw DataArray so we can close its rasterio
+    # file handle later.  Operations like .squeeze() and .clip_box()
+    # create new DataArrays that do NOT inherit the _close callback,
+    # so calling .close() on the processed result would be a no-op.
+    da_raw = da
+
     if "band" in da.dims and da.sizes["band"] == 1:
         da = da.squeeze("band", drop=True)
 
@@ -458,6 +465,13 @@ def load_stac_asset(
     # than later during mosaic/composite when they are harder to recover from.
     if chunks is None:
         da = da.load()
+
+    # Close the original rasterio file handle — data is in memory now.
+    try:
+        da_raw.close()
+    except Exception:
+        pass
+    del da_raw
 
     return da
 
@@ -687,6 +701,7 @@ def load_items(
                     except Exception:
                         pass
                 bli.data.clear()
+            del burst_loaded
             # Save to disk and free memory when output_dir is set
             if output_dir:
                 for m_item in mosaicked:
@@ -694,6 +709,7 @@ def load_items(
                     m_item.unload()
                     print(f"    → saved to {pdir}")
             result.extend(mosaicked)
+            del mosaicked
         else:
             if output_dir:
                 for bli in burst_loaded:
@@ -701,6 +717,14 @@ def load_items(
                     bli.unload()
                     print(f"    → saved to {pdir}")
             result.extend(burst_loaded)
+            del burst_loaded
+
+        # Force garbage collection to free xarray DataArrays with
+        # circular references (coords ↔ parent) and their underlying
+        # numpy buffers / rasterio handles.  Without this, Python's
+        # cyclic GC may not run frequently enough during a tight loop
+        # of 150+ passes, causing OOM.
+        gc.collect()
 
         # Brief pause between passes to be kind to the server
         if pass_idx < len(sorted_keys) - 1:

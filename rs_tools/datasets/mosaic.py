@@ -110,7 +110,15 @@ def _merge_arrays(arrays):
     attempt = list(materialised)
     while attempt:
         try:
-            return merge_arrays(attempt)
+            merged = merge_arrays(attempt)
+            # Free source arrays — merged result is independent
+            for arr in materialised:
+                try:
+                    arr.close()
+                except Exception:
+                    pass
+            del materialised, attempt
+            return merged
         except Exception as exc:
             if len(attempt) == 1:
                 # Last array is itself corrupt — re-raise
@@ -254,6 +262,7 @@ def mosaic_items(items: List[LoadedItem], bbox=None) -> List[LoadedItem]:
                         arr.close()
                     except Exception:
                         pass
+                del arrays
 
         # Use metadata from the first burst
         ref = group[0]
