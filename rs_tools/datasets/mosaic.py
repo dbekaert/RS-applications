@@ -63,10 +63,51 @@ def _merge_arrays(arrays):
     If a merge fails (e.g. corrupt tile in a COG), bad arrays are
     identified and removed one by one until merge succeeds or only a
     single array remains.
+
+    Lazy (Dask-backed) arrays are eagerly materialised *before*
+    merging so that transient HTTP errors are caught early and can
+    be retried individually, rather than failing the whole merge.
     """
+    import time
+    import dask.array
     from rioxarray.merge import merge_arrays
 
-    attempt = list(arrays)
+    # Materialize lazy arrays one-by-one with retries
+    materialised = []
+    for i, arr in enumerate(arrays):
+        if hasattr(arr.data, 'dask_graph') or isinstance(arr.data, dask.array.Array):
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    arr = arr.load()
+                    break
+                except Exception as exc:
+                    if attempt < max_retries - 1:
+                        wait = 2 * (2 ** attempt)
+                        logger.warning(
+                            "Failed to load array %d/%d (attempt %d/%d): %s — "
+                            "retrying in %ds",
+                            i + 1, len(arrays), attempt + 1, max_retries,
+                            exc, wait,
+                        )
+                        time.sleep(wait)
+                    else:
+                        logger.warning(
+                            "Skipping array %d/%d after %d failed attempts: %s",
+                            i + 1, len(arrays), max_retries, exc,
+                        )
+                        arr = None
+                        break
+        if arr is not None:
+            materialised.append(arr)
+
+    if not materialised:
+        raise RuntimeError("All arrays failed to load — cannot merge")
+
+    if len(materialised) == 1:
+        return materialised[0]
+
+    attempt = list(materialised)
     while attempt:
         try:
             return merge_arrays(attempt)
@@ -74,10 +115,6 @@ def _merge_arrays(arrays):
             if len(attempt) == 1:
                 # Last array is itself corrupt — re-raise
                 raise
-            # Binary search: try the first half, then the second half
-            # to identify which array is bad.  Simplest approach: drop
-            # the last array and retry (corrupt tiles usually come from
-            # the most recently added burst).
             logger.warning(
                 "merge_arrays failed (%s); dropping last of %d arrays and retrying",
                 exc, len(attempt),

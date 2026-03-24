@@ -53,21 +53,62 @@ RS-applications/
 └── README.md                  # ← you are here
 ```
 
-## Quick start
+## Installation
+
+### Conda
+
+[Conda](https://docs.conda.io/en/latest/index.html) is a cross-platform
+package manager that allows you to set up isolated environments with all
+required dependencies.  We recommend
+[Miniforge](https://github.com/conda-forge/miniforge), which uses
+conda-forge as its default channel.
+
+If you don't have Miniforge installed:
 
 ```bash
-# Clone
+cd ~/tools
+wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+bash "Miniforge3-$(uname)-$(uname -m).sh" -b -p ~/miniforge
+~/miniforge/bin/mamba init bash   # or: mamba init zsh / mamba init tcsh
+```
+
+Restart your shell after initialisation.
+
+### Installing from source (recommended)
+
+Clone the repository and create the conda environment from
+`environment.yml`:
+
+```bash
 git clone https://github.com/dbekaert/RS-applications.git
 cd RS-applications
 
-# Create a virtual environment (recommended)
-python -m venv .venv && source .venv/bin/activate
+# Create and activate the conda environment
+mamba env create -f environment.yml
+conda activate RS-applications
 
-# Install in editable mode
-pip install -e ".[dev]"
+# Install the package in editable mode
+python -m pip install -e .
+```
 
-# Run tests
-pytest
+Make sure to activate the environment each time you start a new
+session:
+
+```bash
+conda activate RS-applications
+```
+
+To keep the environment in sync after pulling new changes:
+
+```bash
+mamba env update --name RS-applications --file environment.yml --prune
+```
+
+### Running tests
+
+```bash
+conda activate RS-applications
+pytest -v
 ```
 
 ## Account setup
@@ -180,6 +221,7 @@ for item in items:
 ## Running tests
 
 ```bash
+conda activate RS-applications
 pytest -v
 ```
 

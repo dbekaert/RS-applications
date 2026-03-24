@@ -25,6 +25,30 @@ env/
 .DS_Store
 Thumbs.db
 
+# Output files (generated at runtime)
+output/
+notebooks/gifs/
+
+# Image / video artifacts
+*.gif
+*.png
+*.jpg
+*.jpeg
+*.mp4
+*.avi
+
+# Geospatial data files
+*.tif
+*.tiff
+*.nc
+*.hdf
+*.hdf5
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+
 # Credentials (never commit)
 .netrc
 .env

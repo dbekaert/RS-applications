@@ -87,20 +87,32 @@ class TestGroupByPass:
 def _make_rio_item(item_id, dt, orbit="ascending", shape=(10, 10), offset=(0, 0)):
     """Create a LoadedItem with rioxarray-enabled DataArrays."""
     import rioxarray  # noqa: F401
+    from rasterio.transform import from_bounds
 
     y_size, x_size = shape
     y_off, x_off = offset
+    # Use descending y-coordinates (northing decreases with row) to match
+    # real-world raster convention expected by rasterio merge.
+    x_coords = np.arange(x_off, x_off + x_size, dtype=np.float64)
+    y_coords = np.arange(y_off + y_size - 1, y_off - 1, -1, dtype=np.float64)
     vv = xr.DataArray(
         np.ones(shape, dtype=np.float32),
         dims=["y", "x"],
-        coords={
-            "y": np.arange(y_off, y_off + y_size, dtype=np.float64),
-            "x": np.arange(x_off, x_off + x_size, dtype=np.float64),
-        },
+        coords={"y": y_coords, "x": x_coords},
     )
-    vv = vv.rio.set_crs("EPSG:32631")
+    vv = vv.rio.write_crs("EPSG:32631")
     vv = vv.rio.set_spatial_dims(x_dim="x", y_dim="y")
+    vv = vv.rio.write_transform(
+        from_bounds(
+            x_coords[0] - 0.5, y_coords[-1] - 0.5,
+            x_coords[-1] + 0.5, y_coords[0] + 0.5,
+            x_size, y_size,
+        )
+    )
     vh = vv.copy(deep=True) * 0.5
+    vh = vh.rio.write_crs("EPSG:32631")
+    vh = vh.rio.set_spatial_dims(x_dim="x", y_dim="y")
+    vh = vh.rio.write_transform(vv.rio.transform())
 
     return LoadedItem(
         id=item_id,

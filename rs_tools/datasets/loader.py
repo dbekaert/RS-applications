@@ -185,7 +185,10 @@ def _configure_gdal() -> None:
     settings = {
         "GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR",
         "GDAL_HTTP_MERGE_CONSECUTIVE_RANGES": "YES",
-        "GDAL_HTTP_MULTIPLEX": "YES",
+        "GDAL_HTTP_MULTIPLEX": "NO",
+        "GDAL_HTTP_VERSION": "1.1",
+        "GDAL_HTTP_MAX_RETRY": "5",
+        "GDAL_HTTP_RETRY_DELAY": "2",
         "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".tif,.tiff,.vrt",
         "VSI_CACHE": "TRUE",
         "VSI_CACHE_SIZE": "67108864",  # 64 MB
@@ -218,6 +221,7 @@ def load_stac_asset(
     href: str,
     bbox: Optional[BoundingBox] = None,
     s3_url: Optional[str] = None,
+    local_url: Optional[str] = None,
     chunks: Optional[dict] = "auto",
 ):
     """Load a single COG asset as a geo-located xarray DataArray.
@@ -236,6 +240,10 @@ def load_stac_asset(
     s3_url : str, optional
         Corresponding ``s3://`` URI.  When running on AWS this is
         used for faster ``/vsis3/`` access instead of HTTPS.
+    local_url : str, optional
+        Local ``file://`` URL from the STAC ``alternate.local.href``
+        field.  When running on a VITO server with ``/data/MTDA``
+        mounts, the local path is used instead of HTTPS.
     chunks : dict or str or None
         Chunk specification for Dask-backed lazy loading.
         ``"auto"`` (default) lets xarray/dask choose chunk sizes.
@@ -250,8 +258,20 @@ def load_stac_asset(
 
     _configure_gdal()
 
+    # Priority: local path (VITO) > S3 (AWS) > HTTPS
+    _resolved_local = False
+    if local_url:
+        from rs_tools.archives.local import is_on_vito, resolve_local_href
+        if is_on_vito():
+            local_path = resolve_local_href(local_url)
+            if local_path:
+                href = local_path
+                _resolved_local = True
+
     # Resolve the best GDAL path: /vsis3/ on AWS, /vsicurl/ otherwise
-    if "datapool.asf.alaska.edu" in href or (s3_url and "s3://" in s3_url):
+    if not _resolved_local and (
+        "datapool.asf.alaska.edu" in href or (s3_url and "s3://" in s3_url)
+    ):
         from rs_tools.archives.nasa import resolve_nasa_href
         href = resolve_nasa_href(href, s3_url=s3_url)
 
@@ -308,6 +328,83 @@ def load_stac_asset(
     return da
 
 
+def _load_single_item(
+    item: Dict[str, Any],
+    assets: List[str],
+    bbox: Optional[BoundingBox],
+    chunks,
+    item_idx: int,
+    total: int,
+) -> Optional[LoadedItem]:
+    """Load one STAC item's assets into a LoadedItem.
+
+    Returns *None* if no assets could be loaded.
+    """
+    meta = extract_item_metadata(item)
+    item_assets = item.get("assets", {})
+    available = [a for a in assets if a in item_assets]
+    if not available:
+        logger.warning("Item %s has none of %s, skipping.", meta["id"], assets)
+        return None
+
+    data = {}
+    crs = None
+    pixel_size = None
+
+    for asset_name in available:
+        asset_entry = item_assets[asset_name]
+        href = asset_entry.get("href", "")
+        alternate = asset_entry.get("alternate")
+
+        s3_url = None
+        local_url = None
+        if isinstance(alternate, str):
+            s3_url = alternate
+        elif isinstance(alternate, dict):
+            from rs_tools.archives.local import extract_local_url
+            local_url = extract_local_url(alternate)
+
+        if not href:
+            continue
+        try:
+            da = load_stac_asset(
+                href,
+                bbox=bbox,
+                s3_url=s3_url,
+                local_url=local_url,
+                chunks=chunks,
+            )
+            data[asset_name] = da
+            if crs is None and da.rio.crs is not None:
+                crs = str(da.rio.crs)
+                transform = da.rio.transform()
+                pixel_size = abs(transform.a)
+        except Exception:
+            logger.warning(
+                "Failed to load asset %s for item %d/%d (%s)",
+                asset_name, item_idx + 1, total, meta["id"],
+                exc_info=True,
+            )
+
+    if not data:
+        return None
+
+    print(
+        f"  [{item_idx + 1}/{total}] {meta['platform']}"
+        f" | {(meta['orbit_direction'] or '?')[:3].upper()}"
+        f" | {meta['datetime']:%Y-%m-%d %H:%M UTC}"
+    )
+    return LoadedItem(
+        id=meta["id"],
+        datetime=meta["datetime"],
+        platform=meta["platform"],
+        orbit_direction=meta["orbit_direction"],
+        data=data,
+        crs=crs,
+        pixel_size_m=pixel_size,
+    )
+
+
 def load_items(
     items: List[Dict[str, Any]],
     assets: List[str],
@@ -316,6 +413,16 @@ def load_items(
     chunks: Optional[dict] = "auto",
 ) -> List[LoadedItem]:
     """Load COG assets from STAC items into geo-located DataArrays.
+
+    Items are always loaded **one satellite pass at a time** to keep
+    peak memory proportional to a single pass (~2–3 bursts) rather
+    than the entire time-series.  Within each pass, burst-level
+    assets are loaded eagerly, optionally merged (when *mosaic* is
+    True), clipped to *bbox*, and then freed before the next pass.
+
+    For items that cannot be grouped by pass (non-OPERA data), each
+    item is treated as its own "pass" — the streaming logic still
+    applies.
 
     Parameters
     ----------
@@ -338,89 +445,63 @@ def load_items(
     list[LoadedItem]
         Successfully loaded items with data and metadata.
     """
+    from rs_tools.datasets.mosaic import mosaic_items
+
     # Remove reprocessed duplicates before loading pixel data
     items = deduplicate_items(items)
 
-    loaded = []
+    # Group STAC items by satellite pass before loading any pixel data.
+    # Non-OPERA items land under "unknown" and are each treated individually.
+    pass_groups = _group_items_by_pass(items)
+    total_items = len(items)
+    item_counter = 0
 
-    # When mosaicking, load full burst tiles (no individual bbox clip) so that
-    # adjacent bursts — which share the same OPERA 30 m pixel grid — are merged
-    # on their native aligned grid.  A single bbox clip is applied to the
-    # merged mosaic instead.  Without this, each burst is independently
-    # snapped to the nearest WGS84-reprojected pixel boundary, introducing
-    # 1–2 pixel offsets between bursts that appear as spatial shifts.
-    load_bbox = None if mosaic else bbox
+    result: List[LoadedItem] = []
 
-    for i, item in enumerate(items):
-        meta = extract_item_metadata(item)
-        item_assets = item.get("assets", {})
-        available = [a for a in assets if a in item_assets]
-        if not available:
-            logger.warning(
-                "Item %s has none of %s, skipping.", meta["id"], assets
+    sorted_keys = sorted(pass_groups.keys())
+    for pass_idx, pass_key in enumerate(sorted_keys):
+        pass_items = pass_groups[pass_key]
+
+        # Load each burst in this pass eagerly — no Dask chunks — so
+        # that only one pass worth of data is in memory at a time.
+        burst_loaded: List[LoadedItem] = []
+        for stac_item in pass_items:
+            li = _load_single_item(
+                stac_item, assets,
+                bbox=None if mosaic else bbox,  # defer clip when merging
+                chunks=None,                    # eager: read pixels now
+                item_idx=item_counter,
+                total=total_items,
             )
-            continue
-
-        data = {}
-        crs = None
-        pixel_size = None
-
-        for asset_name in available:
-            asset_entry = item_assets[asset_name]
-            href = asset_entry.get("href", "")
-            s3_url = asset_entry.get("alternate")
-            if not href:
-                continue
-            try:
-                da = load_stac_asset(
-                    href, bbox=load_bbox, s3_url=s3_url, chunks=chunks
-                )
-                data[asset_name] = da
-                if crs is None and da.rio.crs is not None:
-                    crs = str(da.rio.crs)
-                    transform = da.rio.transform()
-                    pixel_size = abs(transform.a)
-            except Exception:
-                logger.warning(
-                    "Failed to load asset %s for item %d/%d (%s)",
-                    asset_name,
-                    i + 1,
-                    len(items),
-                    meta["id"],
-                    exc_info=True,
-                )
-
-        if not data:
-            continue
-
-        loaded.append(
-            LoadedItem(
-                id=meta["id"],
-                datetime=meta["datetime"],
-                platform=meta["platform"],
-                orbit_direction=meta["orbit_direction"],
-                data=data,
-                crs=crs,
-                pixel_size_m=pixel_size,
-            )
-        )
-        print(
-            f"  [{i + 1}/{len(items)}] {meta['platform']}"
-            f" | {(meta['orbit_direction'] or '?')[:3].upper()}"
-            f" | {meta['datetime']:%Y-%m-%d %H:%M UTC}"
-        )
-        # Small inter-item delay avoids hitting per-second rate limits on
-        # services that throttle rapid sequential HTTPS requests.
-        if i < len(items) - 1:
+            if li is not None:
+                burst_loaded.append(li)
+            item_counter += 1
             time.sleep(0.3)
 
-    loaded.sort(key=lambda x: x.datetime or datetime.min)
+        if not burst_loaded:
+            continue
 
-    if mosaic:
-        from rs_tools.datasets.mosaic import mosaic_items
-        loaded = mosaic_items(loaded, bbox=bbox)
+        if mosaic:
+            # Merge multi-burst passes, clip to bbox
+            mosaicked = mosaic_items(burst_loaded, bbox=bbox)
+            # Free burst-level arrays
+            for bli in burst_loaded:
+                for da in bli.data.values():
+                    try:
+                        da.close()
+                    except Exception:
+                        pass
+                bli.data.clear()
+            result.extend(mosaicked)
+        else:
+            result.extend(burst_loaded)
 
-    return loaded
+        # Brief pause between passes to be kind to the server
+        if pass_idx < len(sorted_keys) - 1:
+            time.sleep(0.5)
+
+    result.sort(key=lambda x: x.datetime or datetime.min)
+    return result
 
 
 def _group_items_by_pass(
@@ -743,12 +824,20 @@ def _configure_and_load(
         from rs_tools.archives.cdse import configure_gdal_cdse
         configure_gdal_cdse()
     elif archive == "terrascope":
-        setup_terrascope_auth()
-        # Terrascope rate-limits fast concurrent opens — use eager loading so
-        # each file is read fully before the next one starts, giving the retry
-        # logic a chance to back off on 429 responses.
-        if chunks == "auto":
-            chunks = None
+        # On VITO servers data is read from local mounts — HTTPS auth is
+        # only needed as fallback when local paths are unavailable.
+        from rs_tools.archives.local import is_on_vito
+        if is_on_vito():
+            logger.info("On VITO server — will use local paths if available")
+            try:
+                setup_terrascope_auth()
+            except RuntimeError:
+                logger.info(
+                    "Terrascope HTTPS credentials not configured — "
+                    "local file access will be used"
+                )
+        else:
+            setup_terrascope_auth()
 
     # Determine assets from first item if not specified
     if assets is None:
