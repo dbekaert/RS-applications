@@ -29,8 +29,7 @@ from rs_tools.visualization.scalebar import add_scalebar
 from rs_tools.visualization.animation import save_timeseries_gif_lazy
 
 # ── output directory ────────────────────────────────────────────────────────
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-OUT_DIR = os.path.join(SCRIPT_DIR, "output")
+OUT_DIR = os.path.expanduser("~/RS_applications/Applications/RTC/BelgiumColors")
 GIF_DIR = os.path.join(OUT_DIR, "gifs")
 os.makedirs(GIF_DIR, exist_ok=True)
 os.makedirs(os.path.join(OUT_DIR, "passes"), exist_ok=True)
@@ -54,11 +53,15 @@ DEFAULT_CROSS_POL = _CROSS_POL_RANGE    # (0.05, 0.259)
 # Helper: analyse amplitude distribution
 # ════════════════════════════════════════════════════════════════════════════
 
-def analyse_amplitude_stats(data, tag=""):
+def analyse_amplitude_stats(data, tag="", max_pixels_per_pass=500_000):
     """Compute amplitude (sqrt of power) percentiles across all passes.
+
+    To avoid OOM on large AOIs, a random subsample of pixels is taken
+    from each pass (default 500k pixels — plenty for stable percentiles).
 
     Returns dict with VV and VH statistics.
     """
+    rng = np.random.default_rng(42)
     vv_vals, vh_vals = [], []
     for item in data:
         item.load()
@@ -66,8 +69,17 @@ def analyse_amplitude_stats(data, tag=""):
         vh = item.data["VH"].values.ravel()
         item.unload()
         # Convert to amplitude
-        vv_amp = np.sqrt(np.clip(vv[np.isfinite(vv) & (vv > 0)], 0, None))
-        vh_amp = np.sqrt(np.clip(vh[np.isfinite(vh) & (vh > 0)], 0, None))
+        mask_vv = np.isfinite(vv) & (vv > 0)
+        mask_vh = np.isfinite(vh) & (vh > 0)
+        vv_amp = np.sqrt(vv[mask_vv])
+        vh_amp = np.sqrt(vh[mask_vh])
+        # Subsample to keep memory bounded
+        if len(vv_amp) > max_pixels_per_pass:
+            idx = rng.choice(len(vv_amp), max_pixels_per_pass, replace=False)
+            vv_amp = vv_amp[idx]
+        if len(vh_amp) > max_pixels_per_pass:
+            idx = rng.choice(len(vh_amp), max_pixels_per_pass, replace=False)
+            vh_amp = vh_amp[idx]
         vv_vals.append(vv_amp)
         vh_vals.append(vh_amp)
 

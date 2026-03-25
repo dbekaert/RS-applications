@@ -33,8 +33,7 @@ from rs_tools.visualization.overlays import (
 )
 
 # ── output directory ────────────────────────────────────────────────────────
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-OUT_DIR = os.path.join(SCRIPT_DIR, "output")
+OUT_DIR = os.path.expanduser("~/RS_applications/Applications/RTC/bypass")
 GIF_DIR = os.path.join(OUT_DIR, "gifs")
 os.makedirs(GIF_DIR, exist_ok=True)
 os.makedirs(os.path.join(OUT_DIR, "passes"), exist_ok=True)
