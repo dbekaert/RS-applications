@@ -693,7 +693,16 @@ def load_items(
         if mosaic:
             # Merge multi-burst passes, clip to bbox
             mosaicked = mosaic_items(burst_loaded, bbox=bbox)
-            # Free burst-level arrays
+            # Save to disk BEFORE freeing burst data — single-burst
+            # passes share their LoadedItem reference with burst_loaded,
+            # so clearing burst data would empty the mosaic too.
+            if output_dir:
+                for m_item in mosaicked:
+                    pdir = m_item.save(output_dir)
+                    m_item.unload()
+                    print(f"    → saved to {pdir}")
+            result.extend(mosaicked)
+            # Free burst-level arrays after saving
             for bli in burst_loaded:
                 for da in bli.data.values():
                     try:
@@ -702,13 +711,6 @@ def load_items(
                         pass
                 bli.data.clear()
             del burst_loaded
-            # Save to disk and free memory when output_dir is set
-            if output_dir:
-                for m_item in mosaicked:
-                    pdir = m_item.save(output_dir)
-                    m_item.unload()
-                    print(f"    → saved to {pdir}")
-            result.extend(mosaicked)
             del mosaicked
         else:
             if output_dir:
