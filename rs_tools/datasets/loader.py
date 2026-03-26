@@ -560,6 +560,8 @@ def load_items(
     mosaic: bool = False,
     chunks: Optional[dict] = "auto",
     output_dir: Optional[str] = None,
+    backscatter: str = "gamma0",
+    anf_sources: Optional[Dict[str, Any]] = None,
 ) -> List[LoadedItem]:
     """Load COG assets from STAC items into geo-located DataArrays.
 
@@ -598,6 +600,14 @@ def load_items(
         GeoTIFF files (``<output_dir>/passes/<pass_key>/VV.tif``
         etc.) and free pixel data from memory.  Call
         ``item.load()`` to read data back when needed.
+    backscatter : str
+        Target backscatter type: ``"gamma0"`` (default),
+        ``"beta0"``, or ``"sigma0"``.  When not gamma-0, the ANF
+        conversion is applied per-burst before mosaicking.
+    anf_sources : dict, optional
+        Pre-resolved ANF sources (burst_id → file path or STAC dict).
+        When *None* and *backscatter* is not gamma-0, a warning is
+        logged and data is returned as gamma-0.
 
     Returns
     -------
@@ -689,6 +699,45 @@ def load_items(
 
         if not burst_loaded:
             continue
+
+        # Apply backscatter conversion (ANF) per-burst before mosaicking
+        if backscatter != "gamma0" and anf_sources:
+            from rs_tools.datasets.backscatter import (
+                extract_burst_id, apply_anf,
+            )
+            for bli in burst_loaded:
+                bid = extract_burst_id(bli.id)
+                if bid and bid in anf_sources:
+                    anf_src = anf_sources[bid]
+                    try:
+                        if isinstance(anf_src, str):
+                            # Local file path
+                            import rioxarray  # noqa: F401
+                            anf_da = rioxarray.open_rasterio(
+                                anf_src, masked=True,
+                            )
+                            if "band" in anf_da.dims and anf_da.sizes["band"] == 1:
+                                anf_da = anf_da.squeeze("band", drop=True)
+                            anf_da = anf_da.load()
+                        else:
+                            # STAC item dict — load the ANF asset
+                            from rs_tools.datasets.backscatter import (
+                                _ANF_ASSET_KEY, BackscatterType, load_anf,
+                            )
+                            target = BackscatterType(backscatter)
+                            anf_da = load_anf(
+                                anf_src, _ANF_ASSET_KEY[target],
+                            )
+
+                        for pol in list(bli.data.keys()):
+                            bli.data[pol] = apply_anf(bli.data[pol], anf_da)
+                        del anf_da
+                    except Exception:
+                        logger.warning(
+                            "ANF conversion failed for burst %s — "
+                            "keeping gamma-0",
+                            bid, exc_info=True,
+                        )
 
         if mosaic:
             # Merge multi-burst passes, clip to bbox
@@ -999,6 +1048,7 @@ def load_dataset(
     interval_months: int = 1,
     chunks: Optional[dict] = "auto",
     output_dir: Optional[str] = None,
+    backscatter: str = "gamma0",
 ) -> List[LoadedItem]:
     """Search and load a known dataset as geo-located data.
 
@@ -1042,6 +1092,12 @@ def load_dataset(
     output_dir : str, optional
         When set, write each mosaicked pass to this directory and
         free pixel data from memory.  See :func:`load_items`.
+    backscatter : str
+        Backscatter type to produce: ``"gamma0"`` (default, native
+        OPERA product), ``"beta0"``, or ``"sigma0"``.  When beta-0
+        or sigma-0 is requested, the corresponding Area Normalisation
+        Factor (ANF) from the OPERA RTC-S1 static layers is applied
+        to each burst *before* mosaicking.
 
     Returns
     -------
@@ -1067,6 +1123,7 @@ def load_dataset(
         return _configure_and_load(
             archive, items, assets, bbox, mosaic, chunks,
             ds_info, short_name, output_dir=output_dir,
+            backscatter=backscatter,
         )
 
     collections = ds_info.archive_collections.get(archive, [])
@@ -1098,7 +1155,8 @@ def load_dataset(
         return []
 
     return _configure_and_load(archive, items, assets, bbox, mosaic, chunks,
-                               ds_info, short_name, output_dir=output_dir)
+                               ds_info, short_name, output_dir=output_dir,
+                               backscatter=backscatter)
 
 
 def _configure_and_load(
@@ -1111,6 +1169,7 @@ def _configure_and_load(
     ds_info=None,
     short_name: str = "",
     output_dir: Optional[str] = None,
+    backscatter: str = "gamma0",
 ) -> List["LoadedItem"]:
     """Configure GDAL auth for *archive*, resolve assets, and load items."""
 
@@ -1148,5 +1207,39 @@ def _configure_and_load(
             if "image" in v.get("type", "") or k in ("VV", "VH", "data")
         ]
 
+    # Resolve static layers if backscatter conversion is needed
+    anf_sources: Optional[Dict[str, Any]] = None
+    if backscatter != "gamma0":
+        from rs_tools.datasets.backscatter import (
+            BackscatterType, _ANF_ASSET_KEY,
+            resolve_static_items_terrascope,
+            resolve_static_items_nasa,
+            resolve_static_items_local,
+        )
+        target = BackscatterType(backscatter)
+        anf_asset = _ANF_ASSET_KEY[target]
+        print(f"Resolving static layers for {target.value} conversion …")
+
+        # Try local filesystem first (fastest on VITO)
+        from rs_tools.archives.local import is_on_vito
+        if is_on_vito():
+            anf_sources = resolve_static_items_local(items, anf_asset)
+            if anf_sources:
+                print(f"  Found {len(anf_sources)} ANF layers on local filesystem")
+
+        if not anf_sources:
+            if archive == "terrascope":
+                anf_sources = resolve_static_items_terrascope(items, anf_asset)
+            elif archive == "nasa":
+                anf_sources = resolve_static_items_nasa(items, anf_asset)
+            else:
+                anf_sources = {}
+
+        if not anf_sources:
+            logger.warning(
+                "No static layers found — data will remain as gamma-0"
+            )
+
     return load_items(items, assets=assets, bbox=bbox, mosaic=mosaic, chunks=chunks,
-                       output_dir=output_dir)
+                       output_dir=output_dir, backscatter=backscatter,
+                       anf_sources=anf_sources)
