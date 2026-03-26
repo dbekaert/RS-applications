@@ -21,6 +21,10 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import rasterio
+import xarray as xr
+import rioxarray  # noqa: F401
+from rasterio.transform import from_bounds
 
 from rs_tools.config import BoundingBox
 from rs_tools.datasets.loader import load_dataset, load_passes_from_disk, LoadedItem
@@ -41,7 +45,7 @@ bbox_belgium = BoundingBox(west=2.54, south=49.50, east=6.41, north=51.50)
 # ── temporal range & sampling ────────────────────────────────────────────────
 START_DATE      = "2014-10-01"
 END_DATE        = "2026-03-24"
-INTERVAL_MONTHS = 2           # one pass every 2 months
+INTERVAL_MONTHS = 1           # one pass per month
 
 # ── Default vs custom colour ranges ─────────────────────────────────────────
 # ASF/HyP3 world-wide defaults (amplitude after sqrt)
@@ -204,18 +208,64 @@ def plot_amplitude_histograms(vv_all, vh_all, default_co, default_cross,
 # Helper: composite with custom ranges
 # ════════════════════════════════════════════════════════════════════════════
 
-def make_composite_fn(co_range, cross_range):
-    """Return a composite function using the given amplitude ranges."""
-    def _fn(item):
-        item.load()
-        vv = item.data["VV"].values
-        vh = item.data["VH"].values
-        rgb = rtc_composite(vv, vh, co_pol_range=co_range,
-                            cross_pol_range=cross_range)
-        label = item.label
-        item.unload()
-        return rgb, label
-    return _fn
+# Maximum pixel dimension (height or width) for visualisation.
+_VIS_MAX_DIM = 2000
+
+
+def _build_reference_grid(data, max_dim=_VIS_MAX_DIM):
+    """Build an xarray DataArray covering the union extent of all passes.
+
+    The reference is downsampled so the longest dimension <= *max_dim*
+    pixels.  Every pass can then be ``reproject_match``-ed to this grid
+    so all frames have identical shape and alignment.
+    """
+    lefts, bottoms, rights, tops = [], [], [], []
+    crs = None
+    native_res = None
+    for item in data:
+        tif = os.path.join(item.pass_dir, "VV.tif")
+        with rasterio.open(tif) as src:
+            b = src.bounds
+            lefts.append(b.left); bottoms.append(b.bottom)
+            rights.append(b.right); tops.append(b.top)
+            if crs is None:
+                crs = src.crs
+                native_res = src.res[0]
+
+    left, bottom = min(lefts), min(bottoms)
+    right, top = max(rights), max(tops)
+
+    native_w = int(round((right - left) / native_res))
+    native_h = int(round((top - bottom) / native_res))
+    factor = max(1, max(native_h, native_w) // max_dim)
+    res = native_res * factor
+
+    w = int(round((right - left) / res))
+    h = int(round((top - bottom) / res))
+
+    transform = from_bounds(left, bottom, right, top, w, h)
+
+    y_coords = np.linspace(top - res / 2, bottom + res / 2, h)
+    x_coords = np.linspace(left + res / 2, right - res / 2, w)
+
+    ref = xr.DataArray(
+        np.zeros((h, w), dtype=np.float32),
+        dims=["y", "x"],
+        coords={"y": y_coords, "x": x_coords},
+    )
+    ref = ref.rio.write_crs(crs)
+    ref = ref.rio.write_transform(transform)
+    print(f"Reference grid: {w}x{h} px  (factor={factor}x, res={res:.0f} m)")
+    return ref
+
+
+def _load_on_grid(item, ref_grid):
+    """Load VV/VH from *item*, reproject onto *ref_grid*, return arrays."""
+    item.load()
+    vv = item.data["VV"].rio.reproject_match(ref_grid).values
+    vh = item.data["VH"].rio.reproject_match(ref_grid).values
+    item.unload()
+    return vv, vh
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -230,7 +280,7 @@ data = load_dataset(
     start_date=START_DATE,
     end_date=END_DATE,
     archive="terrascope",
-    limit=500,
+    limit=2000,
     monthly=True,
     interval_months=INTERVAL_MONTHS,
     output_dir=OUT_DIR,
@@ -239,7 +289,11 @@ print(f"\n→ Saved {len(data)} passes to {OUT_DIR}/passes/")
 
 # Reload metadata from disk (pixel data stays on disk)
 data = load_passes_from_disk(OUT_DIR)
-print(f"→ {len(data)} passes available on disk\n")
+print(f"→ {len(data)} passes available on disk")
+
+# Build a fixed reference grid (union of all pass extents, downsampled)
+ref_grid = _build_reference_grid(data)
+print()
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -318,9 +372,7 @@ if N_COMPARE == 1:
     axes = axes[np.newaxis, :]
 
 for row, item in enumerate(compare_items):
-    item.load()
-    vv = item.data["VV"].values
-    vh = item.data["VH"].values
+    vv, vh = _load_on_grid(item, ref_grid)
 
     rgb_default = rtc_composite(vv, vh,
                                 co_pol_range=DEFAULT_CO_POL,
@@ -328,15 +380,17 @@ for row, item in enumerate(compare_items):
     rgb_belgium = rtc_composite(vv, vh,
                                 co_pol_range=suggested_co,
                                 cross_pol_range=suggested_cross)
-    item.unload()
+    del vv, vh
 
     axes[row, 0].imshow(rgb_default, origin="upper")
     axes[row, 0].set_axis_off()
     axes[row, 0].set_title(f"Default — {item.label}", fontsize=10)
+    del rgb_default
 
     axes[row, 1].imshow(rgb_belgium, origin="upper")
     axes[row, 1].set_axis_off()
     axes[row, 1].set_title(f"Belgium — {item.label}", fontsize=10)
+    del rgb_belgium
 
 plt.suptitle("Before (ASF defaults) vs After (Belgium-optimised)", fontsize=14, y=1.01)
 plt.tight_layout()
@@ -352,20 +406,19 @@ print(f"Saved: {compare_path}")
 
 def _side_by_side_composite(item):
     """Render a single frame with default (left) and Belgium (right)."""
-    item.load()
-    vv = item.data["VV"].values
-    vh = item.data["VH"].values
+    vv, vh = _load_on_grid(item, ref_grid)
     rgb_default = rtc_composite(vv, vh,
                                 co_pol_range=DEFAULT_CO_POL,
                                 cross_pol_range=DEFAULT_CROSS_POL)
     rgb_belgium = rtc_composite(vv, vh,
                                 co_pol_range=suggested_co,
                                 cross_pol_range=suggested_cross)
+    del vv, vh
     label = item.label
-    item.unload()
     # Create side-by-side with a thin separator
     sep = np.ones((rgb_default.shape[0], 4, 3), dtype=np.float32) * 0.3
     rgb = np.concatenate([rgb_default, sep, rgb_belgium], axis=1)
+    del rgb_default, rgb_belgium
     return rgb, label
 
 if data:
@@ -383,11 +436,19 @@ if data:
 # ════════════════════════════════════════════════════════════════════════════
 # 8. GIF with Belgium-optimised colours only
 # ════════════════════════════════════════════════════════════════════════════
+def _optimised_composite(item):
+    """Render a single frame with Belgium-optimised colours."""
+    vv, vh = _load_on_grid(item, ref_grid)
+    rgb = rtc_composite(vv, vh, co_pol_range=suggested_co,
+                        cross_pol_range=suggested_cross)
+    del vv, vh
+    return rgb, item.label
+
 if data:
     gif_path2 = os.path.join(GIF_DIR, "belgium_optimised.gif")
     save_timeseries_gif_lazy(
         data, gif_path2,
-        composite_fn=make_composite_fn(suggested_co, suggested_cross),
+        composite_fn=_optimised_composite,
         title="Belgium — Optimised RTC Colour Composite",
         pixel_size_m=data[0].pixel_size_m if data[0].pixel_size_m else None,
         fps=2,
