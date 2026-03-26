@@ -1,27 +1,43 @@
 """OPERA RTC-S1 browse image compositing.
 
 Creates false-colour RGB composites from co-pol (VV) and cross-pol (VH)
-SAR backscatter following the ASF/HyP3 colour convention:
+SAR backscatter.
 
-    R = sqrt(VV),   range [0.14, 0.52]
-    G = sqrt(VH),   range [0.05, 0.259]
+Default colour convention (Belgium-optimised):
+    R = sqrt(VV),   range [0.129, 0.871]
+    G = sqrt(VH),   range [0.040, 0.358]
     B = sqrt(VV)    (same as R)
 
-Reference:
+Derived from a statistical analysis of ~66 monthly OPERA RTC-S1 passes
+over Belgium, using P2/P98 percentiles.  Reduces saturation from ~15 %
+(ASF/HyP3 defaults) to ~4 % while preserving contrast.
+
+Named presets are available via :data:`PRESETS`.
+
+Reference (original ASF convention):
     https://github.com/ASFHyP3/opera-rtc-s1-browse
 """
 
 from __future__ import annotations
 
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 
-# ASF / HyP3 default amplitude scaling ranges
-_CO_POL_RANGE = (0.14, 0.52)
-_CROSS_POL_RANGE = (0.05, 0.259)
+# ── Named colour presets ────────────────────────────────────────────────────
+# Each preset maps to (co_pol_range, cross_pol_range) in amplitude space.
+PRESETS: Dict[str, Tuple[Tuple[float, float], Tuple[float, float]]] = {
+    # Belgium-optimised (P2/P98), derived from 66 monthly passes 2019–2025.
+    # Wider dynamic range → less saturation, better urban/farmland contrast.
+    "default": ((0.129, 0.871), (0.040, 0.358)),
+    # Original ASF / HyP3 convention — good for global overviews.
+    "OPERA_global": ((0.14, 0.52), (0.05, 0.259)),
+}
+
+# Active default ranges (used when callers pass no explicit ranges).
+_CO_POL_RANGE, _CROSS_POL_RANGE = PRESETS["default"]
 
 
 def _normalize_band(
@@ -39,12 +55,12 @@ def rtc_composite(
     vh: np.ndarray,
     co_pol_range: Tuple[float, float] = _CO_POL_RANGE,
     cross_pol_range: Tuple[float, float] = _CROSS_POL_RANGE,
+    preset: Optional[str] = None,
 ) -> np.ndarray:
     """Create a false-colour RGB composite from RTC VV/VH power arrays.
 
     The input arrays are expected to be in **linear power** scale
-    (not dB).  They are converted to amplitude (sqrt) and normalised
-    using the ASF/HyP3 colour convention.
+    (not dB).  They are converted to amplitude (sqrt) and normalised.
 
     Parameters
     ----------
@@ -56,12 +72,23 @@ def rtc_composite(
         (min, max) amplitude range for VV normalisation.
     cross_pol_range : tuple[float, float]
         (min, max) amplitude range for VH normalisation.
+    preset : str, optional
+        Named colour preset from :data:`PRESETS`.  When given,
+        overrides *co_pol_range* and *cross_pol_range*.
+        E.g. ``"OPERA_global"`` for the original ASF/HyP3 ranges.
 
     Returns
     -------
     np.ndarray
         ``(H, W, 3)`` float RGB array with values in [0, 1].
     """
+    if preset is not None:
+        if preset not in PRESETS:
+            raise ValueError(
+                f"Unknown preset {preset!r}. "
+                f"Available: {sorted(PRESETS)}"
+            )
+        co_pol_range, cross_pol_range = PRESETS[preset]
     vv_amp = np.sqrt(np.where(np.isnan(vv), np.nan, np.clip(vv, 0, None)))
     vh_amp = np.sqrt(np.where(np.isnan(vh), np.nan, np.clip(vh, 0, None)))
 
@@ -82,6 +109,7 @@ def plot_rtc_composite(
     title: Optional[str] = None,
     co_pol_range: Tuple[float, float] = _CO_POL_RANGE,
     cross_pol_range: Tuple[float, float] = _CROSS_POL_RANGE,
+    preset: Optional[str] = None,
     figsize: Tuple[int, int] = (10, 10),
     ax: Optional[plt.Axes] = None,
 ) -> plt.Figure:
@@ -95,6 +123,8 @@ def plot_rtc_composite(
         Plot title.
     co_pol_range, cross_pol_range : tuple
         Amplitude scaling ranges.
+    preset : str, optional
+        Named colour preset (overrides ranges).
     figsize : tuple
         Figure size (only used when *ax* is None).
     ax : matplotlib.axes.Axes | None
@@ -104,7 +134,7 @@ def plot_rtc_composite(
     -------
     matplotlib.figure.Figure
     """
-    rgb = rtc_composite(vv, vh, co_pol_range, cross_pol_range)
+    rgb = rtc_composite(vv, vh, co_pol_range, cross_pol_range, preset=preset)
 
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize)
