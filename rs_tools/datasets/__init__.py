@@ -1,5 +1,11 @@
 """Dataset catalog, loading, and coverage utilities."""
 
+from rs_tools.datasets.backscatter import (
+    BackscatterType,
+    apply_anf,
+    convert_pass_backscatter,
+    extract_burst_id,
+)
 from rs_tools.datasets.catalog import (
     DatasetInfo,
     get,
@@ -26,6 +32,11 @@ from rs_tools.datasets.loader import (
 )
 
 __all__ = [
+    # backscatter
+    "BackscatterType",
+    "apply_anf",
+    "convert_pass_backscatter",
+    "extract_burst_id",
     # catalog
     "DatasetInfo",
     "get",

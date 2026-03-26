@@ -143,11 +143,9 @@ def _render_frame(
     fig.savefig(buf, format="png", dpi=dpi, bbox_inches="tight")
     plt.close(fig)
     buf.seek(0)
-    img = Image.open(buf).copy()
+    img = Image.open(buf).convert("RGB")
     buf.close()
-
-    # Convert to palette mode for smaller GIF frames
-    return img.convert("P", palette=Image.ADAPTIVE, colors=256)
+    return img
 
 
 # ---------------------------------------------------------------------------
@@ -284,34 +282,58 @@ def save_timeseries_gif_lazy(
     output_path = Path(output_path)
     duration_ms = int(1000.0 / fps)
 
-    # Collect palette-mode PIL frames, one at a time
-    pil_frames: List[Image.Image] = []
-    for item in items:
-        rgb, label = composite_fn(item)
-        img = _render_frame(
-            rgb,
-            label=label,
-            title=title,
-            scalebar_km=scalebar_km,
-            pixel_size_m=pixel_size_m,
-            figsize=figsize,
-            dpi=dpi,
+    # Write each rendered frame to a temp PNG on disk so that at most
+    # one composite + one PIL image is in memory at any time.
+    import tempfile
+    tmp_dir = tempfile.mkdtemp(prefix="gif_frames_")
+    frame_paths: List[str] = []
+    n_frames = 0
+
+    try:
+        for item in items:
+            rgb, label = composite_fn(item)
+            img = _render_frame(
+                rgb,
+                label=label,
+                title=title,
+                scalebar_km=scalebar_km,
+                pixel_size_m=pixel_size_m,
+                figsize=figsize,
+                dpi=dpi,
+            )
+            del rgb  # free composite immediately
+
+            frame_path = os.path.join(tmp_dir, f"frame_{n_frames:04d}.png")
+            img.save(frame_path)
+            frame_paths.append(frame_path)
+            del img
+            n_frames += 1
+
+        if n_frames == 0:
+            raise ValueError("No frames produced from items iterable")
+
+        # Assemble GIF — load frames lazily via a generator so PIL
+        # only keeps one extra frame in memory at a time.
+        first_frame = Image.open(frame_paths[0]).convert("RGB")
+
+        def _load_remaining():
+            for fp in frame_paths[1:]:
+                yield Image.open(fp).convert("RGB")
+
+        first_frame.save(
+            output_path,
+            save_all=True,
+            append_images=_load_remaining(),
+            duration=duration_ms,
+            loop=0,
         )
-        del rgb  # free composite immediately
-        pil_frames.append(img)
+        del first_frame
 
-    if not pil_frames:
-        raise ValueError("No frames produced from items iterable")
-
-    pil_frames[0].save(
-        output_path,
-        save_all=True,
-        append_images=pil_frames[1:],
-        duration=duration_ms,
-        loop=0,
-    )
+    finally:
+        import shutil as _shutil
+        _shutil.rmtree(tmp_dir, ignore_errors=True)
 
     size_mb = os.path.getsize(output_path) / (1024 * 1024)
-    print(f"Saved {len(pil_frames)}-frame GIF → {output_path} ({size_mb:.1f} MB)")
+    print(f"Saved {n_frames}-frame GIF → {output_path} ({size_mb:.1f} MB)")
     compress_gif(output_path, lossy=lossy)
     return output_path
