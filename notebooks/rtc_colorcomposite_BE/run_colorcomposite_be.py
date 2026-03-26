@@ -57,14 +57,20 @@ DEFAULT_CROSS_POL = _CROSS_POL_RANGE    # (0.05, 0.259)
 # Helper: analyse amplitude distribution
 # ════════════════════════════════════════════════════════════════════════════
 
-def analyse_amplitude_stats(data, tag="", max_pixels_per_pass=500_000):
+def analyse_amplitude_stats(data, tag="", max_pixels_per_pass=None,
+                            total_pixel_budget=50_000_000):
     """Compute amplitude (sqrt of power) percentiles across all passes.
 
     To avoid OOM on large AOIs, a random subsample of pixels is taken
-    from each pass (default 500k pixels — plenty for stable percentiles).
+    from each pass.  The per-pass limit is set dynamically so that the
+    total number of concatenated pixels stays within *total_pixel_budget*
+    (default 50 M ≈ 400 MB for two float32 arrays).
 
     Returns dict with VV and VH statistics.
     """
+    n_passes = len(data)
+    if max_pixels_per_pass is None:
+        max_pixels_per_pass = max(10_000, total_pixel_budget // max(n_passes, 1))
     rng = np.random.default_rng(42)
     vv_vals, vh_vals = [], []
     for item in data:
