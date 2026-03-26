@@ -23,8 +23,14 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import pyproj
 
-from rs_tools.config import BoundingBox
-from rs_tools.datasets.loader import load_dataset, load_passes_from_disk, LoadedItem
+from rs_tools.config import BoundingBox, SearchConfig
+from rs_tools.datasets.loader import (
+    load_dataset, load_passes_from_disk, LoadedItem,
+    _group_items_by_pass, parse_opera_rtc_id, _configure_and_load,
+    load_items,
+)
+from rs_tools.datasets.catalog import get as get_dataset
+from rs_tools.search import search_archive
 from rs_tools.visualization.rtc_composite import rtc_composite
 from rs_tools.visualization.scalebar import add_scalebar
 from rs_tools.visualization.animation import save_timeseries_gif_lazy
@@ -40,7 +46,7 @@ os.makedirs(os.path.join(OUT_DIR, "passes"), exist_ok=True)
 
 # ── area of interest: Antwerp bypass region (tighter around the R1 bypass) ─
 # Focused on the bypass / Oosterweel junction area
-bbox_bypass = BoundingBox(west=4.34, south=51.19, east=4.46, north=51.27)
+bbox_bypass = BoundingBox(west=4.30, south=51.17, east=4.48, north=51.27)
 
 # ── points of interest on the bypass for time-series extraction ─────────
 BYPASS_POINTS = {
@@ -54,7 +60,84 @@ BYPASS_POINTS = {
 # ── temporal range & sampling ────────────────────────────────────────────────
 START_DATE      = "2014-10-01"
 END_DATE        = "2026-03-24"
-INTERVAL_MONTHS = 1           # monthly for better oscillation characterisation
+# Load ALL passes (no monthly subsampling) to get balanced ASC/DESC counts
+
+
+def _balanced_monthly_search(bbox, start_date, end_date, collections,
+                             limit_per_month=500):
+    """Search month-by-month, keeping 1 ASC + 1 DESC pass per month.
+
+    Unlike ``subsample_monthly`` which picks the single best-coverage
+    pass (biased toward orbit directions with more bursts), this
+    keeps one pass per orbit direction per month for fair comparison.
+    """
+    from collections import defaultdict
+    from datetime import datetime as _dt
+    from dateutil.relativedelta import relativedelta
+
+    start = _dt.strptime(str(start_date), "%Y-%m-%d").date()
+    end = _dt.strptime(str(end_date), "%Y-%m-%d").date()
+
+    all_items = []
+    cursor = start.replace(day=1)
+
+    while cursor <= end:
+        month_end = (cursor + relativedelta(months=1)) - relativedelta(days=1)
+        if month_end > end:
+            month_end = end
+
+        config = SearchConfig(
+            start_date=str(cursor),
+            end_date=str(month_end),
+            bbox=bbox,
+            collections=collections,
+            limit=limit_per_month,
+        )
+        month_items = search_archive("terrascope", config)
+
+        if month_items:
+            passes = _group_items_by_pass(month_items)
+
+            # Separate by orbit direction
+            asc_keys, desc_keys = [], []
+            for key, items in passes.items():
+                if key == "unknown":
+                    continue
+                parsed = parse_opera_rtc_id(items[0].get("id", ""))
+                props = items[0].get("properties", {})
+                orbit = (props.get("sat:orbit_state") or "").lower()
+                if orbit.startswith("asc"):
+                    asc_keys.append(key)
+                elif orbit.startswith("desc"):
+                    desc_keys.append(key)
+
+            selected = []
+            for orbit_keys, label in [(asc_keys, "ASC"), (desc_keys, "DESC")]:
+                if orbit_keys:
+                    best = max(orbit_keys, key=lambda k: len(passes[k]))
+                    selected.extend(passes[best])
+
+            if selected:
+                _dates = sorted({
+                    parse_opera_rtc_id(i.get("id", ""))["acq_time"].strftime(
+                        "%Y-%m-%d")
+                    for i in selected
+                    if parse_opera_rtc_id(i.get("id", "")).get("acq_time")
+                })
+                n_asc = sum(1 for k in asc_keys if k == max(asc_keys, key=lambda k: len(passes[k]))) if asc_keys else 0
+                n_desc = sum(1 for k in desc_keys if k == max(desc_keys, key=lambda k: len(passes[k]))) if desc_keys else 0
+                print(f"  {cursor:%Y-%m}: {len(month_items)} found → "
+                      f"{len(selected)} bursts on {len(_dates)} date(s) "
+                      f"({len(asc_keys)} ASC candidates, "
+                      f"{len(desc_keys)} DESC candidates): "
+                      f"{', '.join(_dates)}")
+                all_items.extend(selected)
+        else:
+            print(f"  {cursor:%Y-%m}: no data")
+
+        cursor += relativedelta(months=1)
+
+    return all_items
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -107,23 +190,30 @@ def split_by_orbit(data):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 1. Load data
+# 1. Load data — balanced 1 ASC + 1 DESC pass per month
 # ════════════════════════════════════════════════════════════════════════════
 print("=" * 60)
-print("Loading Antwerp bypass data …")
+print("Loading Antwerp bypass data (balanced ASC/DESC) …")
 print("=" * 60)
-data = load_dataset(
-    "OPERA_RTC_S1",
-    bbox=bbox_bypass,
-    start_date=START_DATE,
-    end_date=END_DATE,
-    archive="terrascope",
-    limit=500,
-    monthly=True,
-    interval_months=INTERVAL_MONTHS,
-    output_dir=OUT_DIR,
+
+ds_info = get_dataset("OPERA_RTC_S1")
+collections = ds_info.archive_collections["terrascope"]
+
+items = _balanced_monthly_search(
+    bbox_bypass, START_DATE, END_DATE, collections, limit_per_month=500,
 )
-print(f"\n→ Saved {len(data)} passes to {OUT_DIR}/passes/")
+print(f"\nBalanced search returned {len(items)} burst items")
+
+if items:
+    data = _configure_and_load(
+        "terrascope", items, ["VV", "VH"], bbox_bypass,
+        mosaic=True, chunks=None, ds_info=ds_info,
+        short_name="OPERA_RTC_S1", output_dir=OUT_DIR,
+    )
+    print(f"\n→ Saved {len(data)} passes to {OUT_DIR}/passes/")
+else:
+    print("No items found!")
+    data = []
 
 # Reload metadata from disk
 data = load_passes_from_disk(OUT_DIR)
@@ -291,7 +381,85 @@ for subset, name in [(asc_data, "ascending"), (desc_data, "descending"), (all_da
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 7. Summary
+# 7. Temporal-mean GeoTIFFs — ASC / DESC / combined
+# ════════════════════════════════════════════════════════════════════════════
+import rioxarray  # noqa: F811
+import xarray as xr
+from rasterio.crs import CRS
+
+TIFF_DIR = os.path.join(OUT_DIR, "tiffs")
+os.makedirs(TIFF_DIR, exist_ok=True)
+
+print("\n" + "=" * 60)
+print("Step 7: Temporal-mean GeoTIFFs (VV / VH per orbit direction)")
+print("=" * 60)
+
+
+def _temporal_mean_tiff(items, label, output_dir):
+    """Compute temporal mean of VV and VH and write as GeoTIFFs.
+
+    Also writes a 3-band RGB composite TIF using the default colour preset.
+    """
+    if not items:
+        print(f"  {label}: no data, skipping")
+        return
+
+    # Stack all passes
+    vv_stack, vh_stack = [], []
+    ref_item = None
+    for item in items:
+        item.load()
+        if ref_item is None:
+            ref_item = item
+        vv_stack.append(item.data["VV"].values.astype(np.float32))
+        vh_stack.append(item.data["VH"].values.astype(np.float32))
+        item.unload()
+
+    vv_mean = np.nanmean(vv_stack, axis=0)
+    vh_mean = np.nanmean(vh_stack, axis=0)
+    del vv_stack, vh_stack
+
+    # Use spatial metadata from reference item
+    ref_item.load()
+    ref_da = ref_item.data["VV"]
+
+    for band_name, band_data in [("VV", vv_mean), ("VH", vh_mean)]:
+        da = xr.DataArray(
+            band_data,
+            dims=ref_da.dims,
+            coords=ref_da.coords,
+        )
+        da.rio.write_crs(ref_da.rio.crs, inplace=True)
+        da.rio.write_nodata(np.nan, inplace=True)
+        tif_path = os.path.join(output_dir, f"bypass_{label}_{band_name}_mean.tif")
+        da.rio.to_raster(tif_path)
+        print(f"  Saved: {tif_path}")
+
+    # RGB composite TIF (uint8)
+    rgb = rtc_composite(vv_mean, vh_mean)
+    rgb_uint8 = (rgb * 255).clip(0, 255).astype(np.uint8)
+    # Bands-first for rasterio: (3, H, W)
+    rgb_da = xr.DataArray(
+        np.transpose(rgb_uint8, (2, 0, 1)),
+        dims=["band", ref_da.dims[0], ref_da.dims[1]],
+        coords={ref_da.dims[0]: ref_da.coords[ref_da.dims[0]],
+                ref_da.dims[1]: ref_da.coords[ref_da.dims[1]]},
+    )
+    rgb_da.rio.write_crs(ref_da.rio.crs, inplace=True)
+    rgb_da.rio.write_nodata(255, inplace=True)
+    rgb_path = os.path.join(output_dir, f"bypass_{label}_RGB_mean.tif")
+    rgb_da.rio.to_raster(rgb_path)
+    print(f"  Saved: {rgb_path}")
+
+    ref_item.unload()
+
+
+for subset, label in [(asc_data, "ASC"), (desc_data, "DESC"), (all_data, "combined")]:
+    _temporal_mean_tiff(subset, label, TIFF_DIR)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 8. Summary
 # ════════════════════════════════════════════════════════════════════════════
 print("\n" + "=" * 60)
 print("Summary")
