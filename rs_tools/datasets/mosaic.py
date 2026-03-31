@@ -51,7 +51,8 @@ def group_by_pass(items: List[LoadedItem]) -> Dict[Tuple[int, str], List[LoadedI
     for item in items:
         key = _group_key(item)
         if key is None:
-            logger.warning("Cannot determine pass for item %s, skipping", item.id)
+            # CLMS global items are not OPERA bursts — skip silently.
+            logger.debug("Cannot determine pass for item %s, skipping mosaic grouping", item.id)
             continue
         groups[key].append(item)
     return dict(groups)
@@ -224,8 +225,17 @@ def mosaic_items(items: List[LoadedItem], bbox=None) -> List[LoadedItem]:
     """
     groups = group_by_pass(items)
 
+    # Items that could not be grouped (CLMS global products, etc.)
+    # are already clipped during loading — pass them through.
+    grouped_ids = {
+        item.id
+        for group in groups.values()
+        for item in group
+    }
+    ungrouped = [item for item in items if item.id not in grouped_ids]
+
     if not groups:
-        return items
+        return ungrouped
 
     result: List[LoadedItem] = []
 
@@ -298,6 +308,7 @@ def mosaic_items(items: List[LoadedItem], bbox=None) -> List[LoadedItem]:
 
         result.append(merged_item)
 
+    result.extend(ungrouped)
     result.sort(key=lambda x: x.datetime)
 
     # Snap all passes to the first pass's pixel grid so that every date

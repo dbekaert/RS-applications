@@ -783,9 +783,18 @@ def load_items(
         # that only one pass worth of data is in memory at a time.
         burst_loaded: List[LoadedItem] = []
         for stac_item in pass_items:
+            # Global products (CLMS) are single-image composites that
+            # cover the entire planet.  Always clip during loading to
+            # avoid fetching the full 120960×47040 grid (~22 GB).
+            # OPERA items defer clipping so bursts can be mosaicked on
+            # their native grids first.
+            _item_id = stac_item.get("id", "")
+            _is_opera = _item_id.startswith("OPERA_")
+            _clip_now = bbox if (not _is_opera or not mosaic) else None
+
             li = _load_single_item(
                 stac_item, assets,
-                bbox=None if mosaic else bbox,  # defer clip when merging
+                bbox=_clip_now,
                 chunks=None,                    # eager: read pixels now
                 item_idx=item_counter,
                 total=total_items,
@@ -849,14 +858,19 @@ def load_items(
                     m_item.unload()
                     print(f"    → saved to {pdir}")
             result.extend(mosaicked)
-            # Free burst-level arrays after saving
+            # Free burst-level arrays that are NOT in the mosaicked
+            # result.  Single-burst and global items share the same
+            # LoadedItem reference — clearing them would destroy the
+            # data we just added to *result*.
+            mosaicked_ids = {id(m) for m in mosaicked}
             for bli in burst_loaded:
-                for da in bli.data.values():
-                    try:
-                        da.close()
-                    except Exception:
-                        pass
-                bli.data.clear()
+                if id(bli) not in mosaicked_ids:
+                    for da in bli.data.values():
+                        try:
+                            da.close()
+                        except Exception:
+                            pass
+                    bli.data.clear()
             del burst_loaded
             del mosaicked
         else:
@@ -1363,8 +1377,19 @@ def _configure_and_load(
         from rs_tools.archives.nasa import configure_gdal_nasa
         configure_gdal_nasa()
     elif archive == "cdse":
-        from rs_tools.archives.cdse import configure_gdal_cdse
-        configure_gdal_cdse()
+        # CLMS global products use /vsis3/ and need temp S3 credentials;
+        # other CDSE products (Sentinel, OPERA) use /vsicurl/ only.
+        _needs_s3 = any(
+            "/vsis3/" in (a.get("href") or "")
+            for it in items
+            for a in it.get("assets", {}).values()
+        )
+        if _needs_s3:
+            from rs_tools.archives.cdse import configure_gdal_cdse_s3
+            configure_gdal_cdse_s3()
+        else:
+            from rs_tools.archives.cdse import configure_gdal_cdse
+            configure_gdal_cdse()
     elif archive == "terrascope":
         # On VITO servers data is read from local mounts — HTTPS auth is
         # only needed as fallback when local paths are unavailable.
