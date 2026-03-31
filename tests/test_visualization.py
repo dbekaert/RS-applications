@@ -62,8 +62,9 @@ class TestRTCComposite:
         vv[5, 5] = np.nan
         vh[5, 5] = np.nan
         rgb = rtc_composite(vv, vh)
-        assert rgb[5, 5, 0] == 0.0
-        assert rgb[5, 5, 1] == 0.0
+        # NaN pixels are filled to white (1.0)
+        assert rgb[5, 5, 0] == 1.0
+        assert rgb[5, 5, 1] == 1.0
 
     def test_r_equals_b(self):
         vv = np.random.rand(20, 20) * 0.3
