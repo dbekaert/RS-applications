@@ -31,6 +31,10 @@ class DatasetInfo:
         E.g. ``"10-daily"``, ``"monthly"``.
     spatial_resolution : str | None
         E.g. ``"300 m"``, ``"1 km"``.
+    is_global : bool
+        If *True*, the product is a global composite (e.g. CGLOPS
+        dekadal/monthly products).  Global products are never routed
+        through OPERA-specific grouping or pass-parsing logic.
     tags : list[str]
         Arbitrary tags for filtering.
     """
@@ -42,6 +46,7 @@ class DatasetInfo:
     version: Optional[str] = None
     temporal_resolution: Optional[str] = None
     spatial_resolution: Optional[str] = None
+    is_global: bool = False
     tags: List[str] = field(default_factory=list)
 
 
@@ -97,6 +102,7 @@ register(DatasetInfo(
     version="3",
     temporal_resolution="10-daily",
     spatial_resolution="300 m",
+    is_global=True,
     tags=["biophysical", "clms", "vegetation", "ndvi"],
 ))
 
@@ -112,6 +118,7 @@ register(DatasetInfo(
     version="2",
     temporal_resolution="10-daily",
     spatial_resolution="300 m",
+    is_global=True,
     tags=["biophysical", "clms", "vegetation", "lai"],
 ))
 
@@ -125,6 +132,7 @@ register(DatasetInfo(
     version="2",
     temporal_resolution="10-daily",
     spatial_resolution="300 m",
+    is_global=True,
     tags=["biophysical", "clms", "vegetation", "fapar"],
 ))
 
@@ -138,6 +146,7 @@ register(DatasetInfo(
     version="2",
     temporal_resolution="10-daily",
     spatial_resolution="300 m",
+    is_global=True,
     tags=["biophysical", "clms", "vegetation", "fcover"],
 ))
 
@@ -153,6 +162,7 @@ register(DatasetInfo(
     version="2",
     temporal_resolution="10-daily",
     spatial_resolution="300 m",
+    is_global=True,
     tags=["biophysical", "clms", "carbon", "gpp"],
 ))
 
@@ -166,6 +176,7 @@ register(DatasetInfo(
     version="2",
     temporal_resolution="10-daily",
     spatial_resolution="300 m",
+    is_global=True,
     tags=["biophysical", "clms", "carbon", "npp"],
 ))
 
@@ -181,6 +192,7 @@ register(DatasetInfo(
     version="1",
     temporal_resolution="10-daily",
     spatial_resolution="300 m",
+    is_global=True,
     tags=["biophysical", "clms", "evapotranspiration", "eta"],
 ))
 
@@ -194,6 +206,7 @@ register(DatasetInfo(
     version="1",
     temporal_resolution="daily",
     spatial_resolution="300 m",
+    is_global=True,
     tags=["biophysical", "clms", "evapotranspiration", "hf"],
 ))
 
@@ -209,6 +222,7 @@ register(DatasetInfo(
     version="4",
     temporal_resolution="daily",
     spatial_resolution="300 m",
+    is_global=True,
     tags=["biophysical", "clms", "fire", "burnt_area"],
 ))
 
@@ -222,6 +236,7 @@ register(DatasetInfo(
     version="4",
     temporal_resolution="monthly",
     spatial_resolution="300 m",
+    is_global=True,
     tags=["biophysical", "clms", "fire", "burnt_area"],
 ))
 
@@ -237,6 +252,7 @@ register(DatasetInfo(
     version="2",
     temporal_resolution="daily",
     spatial_resolution="300 m",
+    is_global=True,
     tags=["biophysical", "clms", "reflectance", "toc"],
 ))
 
@@ -252,6 +268,7 @@ register(DatasetInfo(
     version="4",
     temporal_resolution="daily",
     spatial_resolution="12.5 km",
+    is_global=True,
     tags=["biophysical", "clms", "soil", "swi"],
 ))
 

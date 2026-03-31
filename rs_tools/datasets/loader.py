@@ -36,6 +36,36 @@ _SENSOR_NAMES = {
 }
 
 
+# ---------------------------------------------------------------------------
+# Global-product helpers
+# ---------------------------------------------------------------------------
+
+def _dekad_of_date(dt: datetime) -> int:
+    """Return the dekad number (1, 2, or 3) for a given date.
+
+    Dekad 1 = day 1–10, dekad 2 = day 11–20, dekad 3 = day 21–end.
+    """
+    day = dt.day
+    if day <= 10:
+        return 1
+    elif day <= 20:
+        return 2
+    return 3
+
+
+def _dekad_label(dt: datetime) -> str:
+    """Return a compact dekad label, e.g. ``'2022-07-D2'``."""
+    return f"{dt:%Y-%m}-D{_dekad_of_date(dt)}"
+
+
+def _is_global_dataset(short_name: str) -> bool:
+    """Check if *short_name* is registered as a global product."""
+    try:
+        return get_dataset(short_name).is_global
+    except KeyError:
+        return False
+
+
 @dataclass
 class LoadedItem:
     """A loaded STAC item with geo-located data and metadata.
@@ -57,24 +87,62 @@ class LoadedItem:
 
     @property
     def label(self) -> str:
-        """Human-readable label: 'Sentinel-1A | ASC | 2024-06-30 17:41 UTC'."""
+        """Human-readable label.
+
+        OPERA / SAR items: ``'Sentinel-1A | ASC | 2024-06-30 17:41 UTC'``
+        Global CLMS items: ``'CLMS | 2022-07-15 | D2'``
+        """
         parts = [self.platform]
-        if self.orbit_direction:
-            parts.append(self.orbit_direction[:3].upper())
-        parts.append(self.datetime.strftime("%Y-%m-%d %H:%M UTC"))
+
+        if self._is_global_item():
+            parts.append(self.datetime.strftime("%Y-%m-%d"))
+            parts.append(_dekad_label(self.datetime))
+        else:
+            if self.orbit_direction:
+                parts.append(self.orbit_direction[:3].upper())
+            parts.append(self.datetime.strftime("%Y-%m-%d %H:%M UTC"))
         return " | ".join(parts)
+
+    def _is_global_item(self) -> bool:
+        """Return *True* if this item represents a global composite."""
+        # OPERA items have recognisable IDs
+        if self.id and (
+            self.id.startswith("OPERA_")
+            or (self.id.startswith("T") and "_" in self.id)
+        ):
+            return False
+        # Platform hint — Sentinel-1 is OPERA / SAR, not a global composite
+        if self.platform and "sentinel" in self.platform.lower():
+            return False
+        # If platform looks like a CLMS name, it's global
+        if self.platform and self.platform.upper().startswith("CLMS"):
+            return True
+        # Default: non-OPERA, non-Sentinel → global
+        return True
 
     # ── Disk persistence ──────────────────────────────────────────────
 
     def _pass_key(self) -> str:
-        """Build a chronological directory name for this pass."""
+        """Build a chronological directory name for this pass.
+
+        For **OPERA RTC** items the key includes the satellite track
+        and orbit direction, e.g. ``"20240630_1741_ASC_T059"``.
+
+        For **global CLMS** products the track is ``"GLOBAL"`` and
+        the dekad is encoded, e.g. ``"20220715_0000_GLOBAL_D2"``.
+        """
         dt_str = self.datetime.strftime("%Y%m%d_%H%M")
+
+        if self._is_global_item():
+            dekad_str = f"D{_dekad_of_date(self.datetime)}"
+            return f"{dt_str}_GLOBAL_{dekad_str}"
+
+        # OPERA / SAR path
         orb = (self.orbit_direction or "UNK")[:3].upper()
-        # Extract track from the mosaic id (e.g. T110_2022-01-16_3bursts)
         track_str = ""
         if self.id and self.id.startswith("T"):
             track_str = self.id.split("_")[0]  # "T110"
-        else:
+        elif self.id and self.id.startswith("OPERA_"):
             parsed = parse_opera_rtc_id(self.id)
             if parsed.get("track") is not None:
                 track_str = f"T{parsed['track']:03d}"
@@ -106,6 +174,7 @@ class LoadedItem:
             "crs": self.crs,
             "pixel_size_m": self.pixel_size_m,
             "assets": list(self.data.keys()),
+            "dekad": _dekad_label(self.datetime),
         }
         with open(os.path.join(pass_dir, "metadata.json"), "w") as f:
             _json.dump(meta, f, indent=2)
@@ -292,9 +361,15 @@ def deduplicate_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 
 def extract_item_metadata(item: Dict[str, Any]) -> Dict[str, Any]:
-    """Extract standardised metadata from a STAC item dictionary."""
+    """Extract standardised metadata from a STAC item dictionary.
+
+    OPERA RTC-S1 IDs are parsed for track / burst / sensor details.
+    Non-OPERA items (CLMS global products, etc.) are never routed
+    through the OPERA parser.
+    """
     props = item.get("properties", {})
-    meta: Dict[str, Any] = {"id": item.get("id", "")}
+    item_id = item.get("id", "")
+    meta: Dict[str, Any] = {"id": item_id}
 
     dt_str = props.get("datetime") or props.get("start_datetime", "")
     if dt_str:
@@ -306,11 +381,23 @@ def extract_item_metadata(item: Dict[str, Any]) -> Dict[str, Any]:
     meta["orbit_direction"] = orbit.lower() if orbit else None
 
     platform = props.get("platform") or props.get("constellation", "")
-    parsed = parse_opera_rtc_id(meta["id"])
-    if not platform and "platform" in parsed:
-        platform = parsed["platform"]
-    meta["platform"] = platform or "Unknown"
+
+    # Only parse OPERA-specific IDs — never for CLMS/global products.
+    is_opera_id = item_id.startswith("OPERA_")
+    if is_opera_id:
+        parsed = parse_opera_rtc_id(item_id)
+        if not platform and "platform" in parsed:
+            platform = parsed["platform"]
+    else:
+        parsed = {}
+
+    meta["platform"] = platform if platform else "CLMS"
     meta["parsed"] = parsed
+
+    # Dekad info for global products
+    dt = meta.get("datetime")
+    if dt is not None and not is_opera_id:
+        meta["dekad"] = _dekad_label(dt)
 
     return meta
 
@@ -620,7 +707,8 @@ def load_items(
     items = deduplicate_items(items)
 
     # Group STAC items by satellite pass before loading any pixel data.
-    # Non-OPERA items land under "unknown" and are each treated individually.
+    # OPERA items are grouped by track+date; global items are each
+    # treated as their own "pass".
     pass_groups = _group_items_by_pass(items)
     total_items = len(items)
     item_counter = 0
@@ -665,16 +753,26 @@ def load_items(
         if output_dir:
             _probe_meta = extract_item_metadata(pass_items[0])
             _probe_dt = _probe_meta.get("datetime")
-            _probe_orb = _probe_meta.get("orbit_direction")
-            _probe_parsed = _probe_meta.get("parsed", {})
             if _probe_dt is not None:
-                _dt_str = _probe_dt.strftime("%Y%m%d_%H%M")
-                _orb_str = (_probe_orb or "UNK")[:3].upper()
-                _track = _probe_parsed.get("track")
-                _key_parts = [_dt_str, _orb_str]
-                if _track is not None:
-                    _key_parts.append(f"T{_track:03d}")
-                _predicted_key = "_".join(_key_parts)
+                _probe_id = pass_items[0].get("id", "")
+                _is_opera = _probe_id.startswith("OPERA_")
+
+                if _is_opera:
+                    _probe_orb = _probe_meta.get("orbit_direction")
+                    _probe_parsed = _probe_meta.get("parsed", {})
+                    _dt_str = _probe_dt.strftime("%Y%m%d_%H%M")
+                    _orb_str = (_probe_orb or "UNK")[:3].upper()
+                    _track = _probe_parsed.get("track")
+                    _key_parts = [_dt_str, _orb_str]
+                    if _track is not None:
+                        _key_parts.append(f"T{_track:03d}")
+                    _predicted_key = "_".join(_key_parts)
+                else:
+                    # Global product — must match _pass_key() format
+                    _dt_str = _probe_dt.strftime("%Y%m%d_%H%M")
+                    _dekad = _dekad_of_date(_probe_dt)
+                    _predicted_key = f"{_dt_str}_GLOBAL_D{_dekad}"
+
                 if _predicted_key in _existing:
                     print(f"  ⏭ {_predicted_key}: already on disk, skipping")
                     result.append(_existing[_predicted_key])
@@ -790,17 +888,39 @@ def _group_items_by_pass(
 ) -> Dict[str, List[Dict[str, Any]]]:
     """Group STAC items by satellite pass (track + date).
 
-    Returns a dict keyed by ``"TRRR_YYYY-MM-DD"`` with lists of items.
-    Items whose ID cannot be parsed are placed under key ``"unknown"``.
+    For **OPERA RTC** items the key is ``"TRRR_YYYY-MM-DD"`` (track +
+    acquisition date), and all bursts from the same pass are grouped
+    together.  Only OPERA item IDs are routed through
+    :func:`parse_opera_rtc_id`.
+
+    For **global CLMS** products each item is its own "pass",
+    keyed by ``"GLOBAL_YYYY-MM-DD_HHMM_DK"`` where DK is the dekad.
+    This ensures that :func:`subsample_monthly` and the on-disk
+    deduplication in :func:`load_items` work correctly.
+
+    Items whose datetime cannot be determined fall under ``"unknown"``.
     """
     from collections import defaultdict
     groups: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for item in items:
-        parsed = parse_opera_rtc_id(item.get("id", ""))
-        track = parsed.get("track")
-        acq = parsed.get("acq_time")
-        if track is not None and acq is not None:
-            key = f"T{track:03d}_{acq:%Y-%m-%d}"
+        item_id = item.get("id", "")
+
+        # Only parse OPERA-specific IDs
+        if item_id.startswith("OPERA_"):
+            parsed = parse_opera_rtc_id(item_id)
+            track = parsed.get("track")
+            acq = parsed.get("acq_time")
+            if track is not None and acq is not None:
+                key = f"T{track:03d}_{acq:%Y-%m-%d}"
+                groups[key].append(item)
+                continue
+
+        # Non-OPERA (CLMS global, or OPERA items that couldn't be parsed)
+        meta = extract_item_metadata(item)
+        dt = meta.get("datetime")
+        if dt is not None:
+            dekad = _dekad_of_date(dt)
+            key = f"GLOBAL_{dt:%Y-%m-%d_%H%M}_D{dekad}"
         else:
             key = "unknown"
         groups[key].append(item)
@@ -873,9 +993,11 @@ def subsample_monthly(
 ) -> List[Dict[str, Any]]:
     """Keep one satellite pass per calendar month (pre-download).
 
-    Groups burst-level STAC items by pass (track + date), then picks
-    the pass with the **most bursts** per calendar month.  All bursts
-    belonging to the selected pass are kept so mosaicking still works.
+    For **OPERA RTC** items, groups burst-level items by pass (track +
+    date) and picks the pass with the most bursts per calendar month.
+
+    For **non-OPERA** items (CLMS global products, etc.) each item is
+    its own "pass".  One item per calendar month is selected.
 
     Parameters
     ----------
@@ -893,10 +1015,14 @@ def subsample_monthly(
 
     sorted_keys = sorted(k for k in passes if k != "unknown")
 
-    # Group all candidate passes by calendar month
+    # Group all candidate passes by calendar month.
+    # Keys can be "TRRR_YYYY-MM-DD" (OPERA) or "item_YYYY-MM-DD_HHMM"
+    # (non-OPERA).  Extract YYYY-MM via regex.
     month_candidates: dict = _dd(list)
+    _date_re = re.compile(r"(\d{4}-\d{2})")
     for key in sorted_keys:
-        month_key = key.split("_", 1)[1][:7]  # "2024-06"
+        m = _date_re.search(key)
+        month_key = m.group(1) if m else key[:7]
         month_candidates[month_key].append(key)
 
     # For each month pick the pass that has the most bursts (best coverage)
@@ -924,8 +1050,8 @@ def _search_monthly(
     """Search month-by-month, keeping one pass per *interval_months*.
 
     Avoids hitting the item limit on long time ranges with large AOIs
-    by searching each month individually and selecting the first
-    available pass.
+    by searching each month individually and selecting one representative
+    pass (OPERA) or item (global CLMS products).
 
     Parameters
     ----------
@@ -966,20 +1092,79 @@ def _search_monthly(
         if month_items:
             selected = subsample_monthly(month_items)
             all_items.extend(selected)
-            _dates = sorted({
-                parse_opera_rtc_id(i.get("id", ""))["acq_time"].strftime("%Y-%m-%d")
-                for i in selected
-                if parse_opera_rtc_id(i.get("id", "")).get("acq_time")
-            })
+
+            # Summarise — use item datetime generically, not OPERA-specific parsing
+            _dates = set()
+            for i in selected:
+                _meta = extract_item_metadata(i)
+                dt = _meta.get("datetime")
+                if dt is not None:
+                    _dates.add(dt.strftime("%Y-%m-%d"))
+            _dates_sorted = sorted(_dates)
             print(f"  {cursor:%Y-%m}: {len(month_items)} found → "
-                  f"{len(selected)} bursts on {len(_dates)} date(s): "
-                  f"{', '.join(_dates)}")
+                  f"{len(selected)} kept on {len(_dates_sorted)} date(s): "
+                  f"{', '.join(_dates_sorted)}")
         else:
             print(f"  {cursor:%Y-%m}: no data")
 
         cursor += relativedelta(months=interval_months)
 
     return all_items
+
+
+# ---------------------------------------------------------------------------
+# Utility: stack LoadedItem list → time-series xarray.DataArray
+# ---------------------------------------------------------------------------
+
+def items_to_dataarray(
+    items: List["LoadedItem"],
+    asset: Optional[str] = None,
+) -> "xr.DataArray":
+    """Stack loaded items into a single ``(time, y, x)`` DataArray.
+
+    Parameters
+    ----------
+    items : list[LoadedItem]
+        Items returned by :func:`load_dataset`.  Items whose pixel
+        data has been offloaded to disk (``output_dir`` mode) are
+        automatically paged in with ``item.load()`` and released
+        with ``item.unload()`` afterwards.
+    asset : str, optional
+        Asset key to extract from each item's ``.data`` dict.
+        When *None*, the first available key is used.
+
+    Returns
+    -------
+    xr.DataArray
+        Array with dimensions ``(time, y, x)`` and a ``time``
+        coordinate built from each item's ``.datetime``.
+    """
+    import xarray as xr
+
+    if not items:
+        raise ValueError("No items to stack")
+
+    arrays: List["xr.DataArray"] = []
+    times: List["np.datetime64"] = []
+
+    for item in items:
+        on_disk = not item.data and item.pass_dir is not None
+        if on_disk:
+            item.load()
+
+        if asset is None:
+            asset = next(iter(item.data))
+
+        da = item.data[asset]
+        arrays.append(da)
+        times.append(np.datetime64(item.datetime))
+
+        if on_disk:
+            item.unload()
+
+    stacked = xr.concat(arrays, dim="time")
+    stacked = stacked.assign_coords(time=("time", times))
+    return stacked.sortby("time")
 
 
 def _search_with_priority(
