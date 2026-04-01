@@ -19,6 +19,7 @@ significantly.
 
 from __future__ import annotations
 
+import gc
 import io
 import logging
 import os
@@ -142,8 +143,10 @@ def _render_frame(
     buf = io.BytesIO()
     fig.savefig(buf, format="png", dpi=dpi, bbox_inches="tight")
     plt.close(fig)
+    del fig, ax
     buf.seek(0)
     img = Image.open(buf).convert("RGB")
+    # .convert("RGB") copies pixels so buf can be freed
     buf.close()
     return img
 
@@ -305,29 +308,65 @@ def save_timeseries_gif_lazy(
 
             frame_path = os.path.join(tmp_dir, f"frame_{n_frames:04d}.png")
             img.save(frame_path)
-            frame_paths.append(frame_path)
             del img
+            frame_paths.append(frame_path)
             n_frames += 1
+
+            # Matplotlib leaks memory across many fig create/close
+            # cycles; periodic gc keeps the footprint bounded.
+            if n_frames % 5 == 0:
+                gc.collect()
 
         if n_frames == 0:
             raise ValueError("No frames produced from items iterable")
 
-        # Assemble GIF — load frames lazily via a generator so PIL
-        # only keeps one extra frame in memory at a time.
-        first_frame = Image.open(frame_paths[0]).convert("RGB")
+        # Assemble GIF from disk PNGs.
+        # PIL's save_all with a generator can buffer internally, so
+        # we quantize + write each frame as a single-frame GIF first,
+        # then use a streaming concat to avoid loading all frames at
+        # once.  When gifsicle is available it does this natively;
+        # otherwise we fall back to PIL's save_all with the generator.
+        _gifsicle = shutil.which("gifsicle")
 
-        def _load_remaining():
-            for fp in frame_paths[1:]:
-                yield Image.open(fp).convert("RGB")
+        if _gifsicle:
+            # Convert PNGs → individual GIFs, merge with gifsicle
+            gif_singles: List[str] = []
+            for fp in frame_paths:
+                gp = fp.replace(".png", ".gif")
+                Image.open(fp).convert("RGB").save(gp)
+                gif_singles.append(gp)
 
-        first_frame.save(
-            output_path,
-            save_all=True,
-            append_images=_load_remaining(),
-            duration=duration_ms,
-            loop=0,
-        )
-        del first_frame
+            subprocess.run(
+                [
+                    _gifsicle,
+                    "--merge",
+                    f"--delay={duration_ms // 10}",
+                    "--loop",
+                    *gif_singles,
+                    "-o",
+                    str(output_path),
+                ],
+                check=True,
+                capture_output=True,
+            )
+        else:
+            # Fallback: PIL generator approach — still better than
+            # loading all into a list since PIL processes one at a time.
+            first_frame = Image.open(frame_paths[0]).convert("RGB")
+
+            def _load_remaining():
+                for fp in frame_paths[1:]:
+                    frm = Image.open(fp).convert("RGB")
+                    yield frm
+
+            first_frame.save(
+                output_path,
+                save_all=True,
+                append_images=_load_remaining(),
+                duration=duration_ms,
+                loop=0,
+            )
+            del first_frame
 
     finally:
         import shutil as _shutil

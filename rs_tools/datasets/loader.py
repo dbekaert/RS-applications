@@ -943,14 +943,17 @@ def _group_items_by_pass(
 
 def _filter_by_dekad(
     items: List[LoadedItem],
-    dekads: Optional[List[int]],
+    dekads: Optional[Union[int, List[int]]],
 ) -> List[LoadedItem]:
     """Keep only items whose dekad is in *dekads*.
 
     Returns the list unchanged when *dekads* is ``None``.
+    Accepts a single int or a list of ints.
     """
     if dekads is None:
         return items
+    if isinstance(dekads, int):
+        dekads = [dekads]
     filtered = [it for it in items if _dekad_of_date(it.datetime) in dekads]
     n_dropped = len(items) - len(filtered)
     if n_dropped:
@@ -961,7 +964,7 @@ def _filter_by_dekad(
 
 def load_passes_from_disk(
     output_dir: str,
-    dekads: Optional[List[int]] = None,
+    dekads: Optional[Union[int, List[int]]] = None,
 ) -> List[LoadedItem]:
     """Reload pass metadata from a previous :func:`load_items` run.
 
@@ -1273,7 +1276,7 @@ def load_dataset(
     chunks: Optional[dict] = "auto",
     output_dir: Optional[str] = None,
     backscatter: str = "gamma0",
-    dekads: Optional[List[int]] = None,
+    dekads: Optional[Union[int, List[int]]] = None,
 ) -> List[LoadedItem]:
     """Search and load a known dataset as geo-located data.
 

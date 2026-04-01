@@ -108,7 +108,9 @@ def make_colormap_composite(
 
     colormap = _get_cmap(cmap)
     norm = np.clip((arr - vmin) / (vmax - vmin + 1e-10), 0, 1)
+    del arr
     rgb = colormap(norm)[:, :, :3].astype(np.float32)
+    del norm
     return rgb, item.label
 
 
@@ -161,18 +163,22 @@ def make_dual_panel_composite(
     larr = left_item.data[lk].values
     left_item.unload()
 
+    lcmap = _get_cmap(left_cmap)
+    lnorm = np.clip((larr - left_vmin) / (left_vmax - left_vmin + 1e-10), 0, 1)
+    del larr
+    lrgb = lcmap(lnorm)[:, :, :3].astype(np.float32)
+    del lnorm
+
     right_item.load()
     rk = right_asset if right_asset is not None else next(iter(right_item.data))
     rarr = right_item.data[rk].values
     right_item.unload()
 
-    lcmap = _get_cmap(left_cmap)
-    lnorm = np.clip((larr - left_vmin) / (left_vmax - left_vmin + 1e-10), 0, 1)
-    lrgb = lcmap(lnorm)[:, :, :3].astype(np.float32)
-
     rcmap = _get_cmap(right_cmap)
     rnorm = np.clip((rarr - right_vmin) / (right_vmax - right_vmin + 1e-10), 0, 1)
+    del rarr
     rrgb = rcmap(rnorm)[:, :, :3].astype(np.float32)
+    del rnorm
 
     h = max(lrgb.shape[0], rrgb.shape[0])
     if lrgb.shape[0] < h:
@@ -234,21 +240,26 @@ def make_overlay_composite(
     barr = base_item.data[bk].values
     base_item.unload()
 
+    bcmap = _get_cmap(base_cmap)
+    bnorm = np.clip((barr - base_vmin) / (base_vmax - base_vmin + 1e-10), 0, 1)
+    del barr
+    rgb = bcmap(bnorm)[:, :, :3].astype(np.float32)
+    del bnorm
+
     overlay_item.load()
     ok = overlay_asset if overlay_asset is not None else next(iter(overlay_item.data))
     oarr = overlay_item.data[ok].values
     overlay_item.unload()
-
-    bcmap = _get_cmap(base_cmap)
-    bnorm = np.clip((barr - base_vmin) / (base_vmax - base_vmin + 1e-10), 0, 1)
-    rgb = bcmap(bnorm)[:, :, :3].astype(np.float32)
 
     mask = oarr > overlay_threshold
     if mask.any():
         ocmap = _get_cmap(overlay_cmap)
         onorm = np.clip(oarr, 0, 1)
         orgb = ocmap(onorm)[:, :, :3].astype(np.float32)
+        del onorm
         rgb[mask] = (1 - overlay_alpha) * rgb[mask] + overlay_alpha * orgb[mask]
+        del orgb
+    del oarr, mask
 
     return rgb, base_item.label
 
