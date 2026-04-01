@@ -3,72 +3,90 @@
 
 Downloads CLMS NDVI 300 m (10-daily / dekadal) for the Amazon basin
 and the Sahel, then renders a side-by-side comparison GIF.
+
+Usage:
+    python run_amazon_vs_sahel.py                  # all dekads
+    python run_amazon_vs_sahel.py --dekads 1       # dekad 1 only
 """
 
+import argparse
 import matplotlib
 matplotlib.use("Agg")
 
+from functools import partial
 from pathlib import Path
 
 from rs_tools.config import BoundingBox
-from rs_tools.datasets.loader import load_dataset, items_to_dataarray
-from rs_tools.visualization.animation import save_timeseries_gif
-from rs_tools.visualization.frames import dual_panel_frames
+from rs_tools.datasets.loader import load_dataset, load_passes_from_disk
+from rs_tools.visualization.animation import save_timeseries_gif_lazy
+from rs_tools.visualization.frames import make_dual_panel_composite
 
 DATA_DIR = "/home/bekaertd/RS_applications/Applications/CGOPS/amazon_vs_sahel"
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Amazon vs Sahel NDVI animation",
+    )
+    parser.add_argument(
+        "--dekads", nargs="+", type=int, choices=[1, 2, 3], default=None,
+        help="Dekad(s) to include (1, 2, 3). Default: all.",
+    )
+    args = parser.parse_args()
+
     bbox_amazon = BoundingBox(west=-70, south=-10, east=-50, north=5)
     bbox_sahel = BoundingBox(west=-10, south=10, east=15, north=20)
     gif_dir = Path(__file__).resolve().parent / "output" / "gifs"
     gif_dir.mkdir(parents=True, exist_ok=True)
+    dekads = args.dekads
 
     print("Loading CLMS NDVI v3 for Amazon …")
-    amazon_items = load_dataset(
-        "CLMS_NDVI_V3",
-        bbox=bbox_amazon,
-        start_date="2020-01-01",
-        end_date="2023-12-31",
-        limit=150,
-        output_dir=f"{DATA_DIR}/amazon",
+    load_dataset(
+        "CLMS_NDVI_V3", bbox=bbox_amazon,
+        start_date="2020-01-01", end_date="2026-03-01",
+        limit=150, output_dir=f"{DATA_DIR}/amazon", dekads=dekads,
     )
 
     print("Loading CLMS NDVI v3 for Sahel …")
-    sahel_items = load_dataset(
-        "CLMS_NDVI_V3",
-        bbox=bbox_sahel,
-        start_date="2020-01-01",
-        end_date="2023-12-31",
-        limit=150,
-        output_dir=f"{DATA_DIR}/sahel",
+    load_dataset(
+        "CLMS_NDVI_V3", bbox=bbox_sahel,
+        start_date="2020-01-01", end_date="2026-03-01",
+        limit=150, output_dir=f"{DATA_DIR}/sahel", dekads=dekads,
     )
 
+    amazon_items = load_passes_from_disk(f"{DATA_DIR}/amazon", dekads=dekads)
+    sahel_items = load_passes_from_disk(f"{DATA_DIR}/sahel", dekads=dekads)
     if not amazon_items or not sahel_items:
         print("Missing NDVI data for one or both regions — aborting.")
         return
 
-    ndvi_amazon = items_to_dataarray(amazon_items)
-    ndvi_sahel = items_to_dataarray(sahel_items)
-    print(f"Amazon: {ndvi_amazon.sizes}  Sahel: {ndvi_sahel.sizes}")
+    n = min(len(amazon_items), len(sahel_items))
+    amazon_items, sahel_items = amazon_items[:n], sahel_items[:n]
+    print(f"Amazon: {n} dekads  Sahel: {n} dekads")
 
-    print("Rendering dual-panel frames …")
-    frames, labels = dual_panel_frames(
-        ndvi_amazon, ndvi_sahel,
+    dual_composite = partial(
+        make_dual_panel_composite,
         left_cmap="YlGn", right_cmap="YlGn",
         left_vmin=0, left_vmax=0.9,
         right_vmin=0, right_vmax=0.9,
         left_label="Amazon", right_label="Sahel",
-        step=1,
     )
 
-    print("Saving GIF …")
-    gif_path = save_timeseries_gif(
-        frames,
-        gif_dir / "amazon_vs_sahel_ndvi.gif",
-        labels=labels,
+    def _composite(pair):
+        left, right = pair
+        return dual_composite(left, right)
+
+    suffix = "_".join(str(d) for d in dekads) if dekads else "all"
+    gif_name = f"amazon_vs_sahel_ndvi_D{suffix}.gif"
+
+    print("Saving GIF (lazy — one frame at a time) …")
+    gif_path = save_timeseries_gif_lazy(
+        zip(amazon_items, sahel_items),
+        gif_dir / gif_name,
+        composite_fn=_composite,
         title="Amazon vs Sahel — NDVI",
         fps=4,
+        figsize=(16, 8),
     )
     print(f"Done: {gif_path}")
 

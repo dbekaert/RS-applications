@@ -941,7 +941,28 @@ def _group_items_by_pass(
     return dict(groups)
 
 
-def load_passes_from_disk(output_dir: str) -> List[LoadedItem]:
+def _filter_by_dekad(
+    items: List[LoadedItem],
+    dekads: Optional[List[int]],
+) -> List[LoadedItem]:
+    """Keep only items whose dekad is in *dekads*.
+
+    Returns the list unchanged when *dekads* is ``None``.
+    """
+    if dekads is None:
+        return items
+    filtered = [it for it in items if _dekad_of_date(it.datetime) in dekads]
+    n_dropped = len(items) - len(filtered)
+    if n_dropped:
+        print(f"  Filtered to dekad(s) {dekads}: kept {len(filtered)}, "
+              f"dropped {n_dropped}")
+    return filtered
+
+
+def load_passes_from_disk(
+    output_dir: str,
+    dekads: Optional[List[int]] = None,
+) -> List[LoadedItem]:
     """Reload pass metadata from a previous :func:`load_items` run.
 
     Returns ``LoadedItem`` objects with ``data={}`` (no pixel data in
@@ -954,6 +975,9 @@ def load_passes_from_disk(output_dir: str) -> List[LoadedItem]:
     output_dir : str
         The same directory that was passed as *output_dir* to
         :func:`load_items`.
+    dekads : list[int], optional
+        Restrict to specific dekad numbers (1, 2, and/or 3).
+        ``None`` (default) keeps all dekads.
 
     Returns
     -------
@@ -995,6 +1019,7 @@ def load_passes_from_disk(output_dir: str) -> List[LoadedItem]:
         items.append(item)
 
     items.sort(key=lambda x: x.datetime)
+    items = _filter_by_dekad(items, dekads)
     msg = f"Found {len(items)} saved passes in {passes_dir}"
     if n_corrupt:
         msg += f" ({n_corrupt} corrupt/incomplete skipped)"
@@ -1248,6 +1273,7 @@ def load_dataset(
     chunks: Optional[dict] = "auto",
     output_dir: Optional[str] = None,
     backscatter: str = "gamma0",
+    dekads: Optional[List[int]] = None,
 ) -> List[LoadedItem]:
     """Search and load a known dataset as geo-located data.
 
@@ -1297,6 +1323,11 @@ def load_dataset(
         or sigma-0 is requested, the corresponding Area Normalisation
         Factor (ANF) from the OPERA RTC-S1 static layers is applied
         to each burst *before* mosaicking.
+    dekads : list[int], optional
+        For dekadal datasets (e.g. CLMS NDVI), restrict to specific
+        dekad numbers (1, 2, and/or 3).  Dekad 1 = day 1–10,
+        dekad 2 = day 11–20, dekad 3 = day 21–end of month.
+        ``None`` (default) keeps all dekads.
 
     Returns
     -------
@@ -1319,11 +1350,12 @@ def load_dataset(
         print(f"Found {len(items)} items for {short_name} in {archive}")
         if not items:
             return []
-        return _configure_and_load(
+        result = _configure_and_load(
             archive, items, assets, bbox, mosaic, chunks,
             ds_info, short_name, output_dir=output_dir,
             backscatter=backscatter,
         )
+        return _filter_by_dekad(result, dekads)
 
     collections = ds_info.archive_collections.get(archive, [])
     if not collections:
@@ -1353,9 +1385,10 @@ def load_dataset(
     if not items:
         return []
 
-    return _configure_and_load(archive, items, assets, bbox, mosaic, chunks,
-                               ds_info, short_name, output_dir=output_dir,
-                               backscatter=backscatter)
+    result = _configure_and_load(archive, items, assets, bbox, mosaic, chunks,
+                                ds_info, short_name, output_dir=output_dir,
+                                backscatter=backscatter)
+    return _filter_by_dekad(result, dekads)
 
 
 def _configure_and_load(

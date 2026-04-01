@@ -70,6 +70,189 @@ def data_to_rgb_frames(
     return frames, labels
 
 
+def make_colormap_composite(
+    item: "LoadedItem",
+    cmap: str = "viridis",
+    vmin: float = 0.0,
+    vmax: float = 1.0,
+    asset: Optional[str] = None,
+) -> Tuple[np.ndarray, str]:
+    """Convert a single :class:`~rs_tools.datasets.loader.LoadedItem` to an RGB frame.
+
+    Loads data from disk, applies the colourmap, then unloads to keep
+    memory usage minimal.  Intended for use as *composite_fn* with
+    :func:`~rs_tools.visualization.animation.save_timeseries_gif_lazy`.
+
+    Parameters
+    ----------
+    item : LoadedItem
+        A dataset item (may be on disk or already loaded).
+    cmap : str
+        Matplotlib colormap name.
+    vmin, vmax : float
+        Colour-scale limits.
+    asset : str, optional
+        Asset key to use.  When *None*, the first available key is used.
+
+    Returns
+    -------
+    rgb : np.ndarray
+        ``(H, W, 3)`` float32 array with values in [0, 1].
+    label : str
+        Human-readable label from the item.
+    """
+    item.load()
+    key = asset if asset is not None else next(iter(item.data))
+    arr = item.data[key].values
+    item.unload()
+
+    colormap = _get_cmap(cmap)
+    norm = np.clip((arr - vmin) / (vmax - vmin + 1e-10), 0, 1)
+    rgb = colormap(norm)[:, :, :3].astype(np.float32)
+    return rgb, item.label
+
+
+def make_dual_panel_composite(
+    left_item: "LoadedItem",
+    right_item: "LoadedItem",
+    left_cmap: str = "viridis",
+    right_cmap: str = "viridis",
+    left_vmin: float = 0.0,
+    left_vmax: float = 1.0,
+    right_vmin: float = 0.0,
+    right_vmax: float = 1.0,
+    left_label: str = "",
+    right_label: str = "",
+    left_asset: Optional[str] = None,
+    right_asset: Optional[str] = None,
+    gap_px: int = 4,
+) -> Tuple[np.ndarray, str]:
+    """Build a side-by-side RGB frame from two :class:`LoadedItem` objects.
+
+    Loads each item from disk, applies colormaps, concatenates
+    horizontally, then unloads both.  Intended for use as
+    *composite_fn* with
+    :func:`~rs_tools.visualization.animation.save_timeseries_gif_lazy`.
+
+    Parameters
+    ----------
+    left_item, right_item : LoadedItem
+        Data items for the left and right panels.
+    left_cmap, right_cmap : str
+        Colormap names.
+    left_vmin, left_vmax, right_vmin, right_vmax : float
+        Colour-scale limits for each panel.
+    left_label, right_label : str
+        Product labels embedded in the returned label string.
+    left_asset, right_asset : str, optional
+        Asset keys.  When *None*, the first available key is used.
+    gap_px : int
+        White gap width between panels in pixels.
+
+    Returns
+    -------
+    rgb : np.ndarray
+        ``(H, W_left + gap + W_right, 3)`` float32 array.
+    label : str
+        Combined date + product label string.
+    """
+    left_item.load()
+    lk = left_asset if left_asset is not None else next(iter(left_item.data))
+    larr = left_item.data[lk].values
+    left_item.unload()
+
+    right_item.load()
+    rk = right_asset if right_asset is not None else next(iter(right_item.data))
+    rarr = right_item.data[rk].values
+    right_item.unload()
+
+    lcmap = _get_cmap(left_cmap)
+    lnorm = np.clip((larr - left_vmin) / (left_vmax - left_vmin + 1e-10), 0, 1)
+    lrgb = lcmap(lnorm)[:, :, :3].astype(np.float32)
+
+    rcmap = _get_cmap(right_cmap)
+    rnorm = np.clip((rarr - right_vmin) / (right_vmax - right_vmin + 1e-10), 0, 1)
+    rrgb = rcmap(rnorm)[:, :, :3].astype(np.float32)
+
+    h = max(lrgb.shape[0], rrgb.shape[0])
+    if lrgb.shape[0] < h:
+        pad = np.ones((h - lrgb.shape[0], lrgb.shape[1], 3), dtype=np.float32)
+        lrgb = np.vstack([lrgb, pad])
+    if rrgb.shape[0] < h:
+        pad = np.ones((h - rrgb.shape[0], rrgb.shape[1], 3), dtype=np.float32)
+        rrgb = np.vstack([rrgb, pad])
+
+    gap = np.ones((h, gap_px, 3), dtype=np.float32)
+    combined = np.hstack([lrgb, gap, rrgb])
+
+    tag = f"{left_label} | {right_label}" if left_label or right_label else ""
+    label = f"{left_item.label}  {tag}".strip()
+    return combined, label
+
+
+def make_overlay_composite(
+    base_item: "LoadedItem",
+    overlay_item: "LoadedItem",
+    base_cmap: str = "YlGn",
+    overlay_cmap: str = "Reds",
+    base_vmin: float = 0.0,
+    base_vmax: float = 1.0,
+    overlay_threshold: float = 0.1,
+    overlay_alpha: float = 0.6,
+    base_asset: Optional[str] = None,
+    overlay_asset: Optional[str] = None,
+) -> Tuple[np.ndarray, str]:
+    """Composite an overlay on a base product from two :class:`LoadedItem` objects.
+
+    Loads each item from disk, renders the base colormap, applies the
+    overlay where values exceed a threshold, then unloads both.
+
+    Parameters
+    ----------
+    base_item, overlay_item : LoadedItem
+        Data items for the base and overlay layers.
+    base_cmap, overlay_cmap : str
+        Colormap names.
+    base_vmin, base_vmax : float
+        Colour-scale limits for the base layer.
+    overlay_threshold : float
+        Only overlay pixels where the overlay value exceeds this.
+    overlay_alpha : float
+        Opacity of the overlay (0 = transparent, 1 = opaque).
+    base_asset, overlay_asset : str, optional
+        Asset keys.  When *None*, the first available key is used.
+
+    Returns
+    -------
+    rgb : np.ndarray
+        ``(H, W, 3)`` float32 composited array.
+    label : str
+        Human-readable label from the base item.
+    """
+    base_item.load()
+    bk = base_asset if base_asset is not None else next(iter(base_item.data))
+    barr = base_item.data[bk].values
+    base_item.unload()
+
+    overlay_item.load()
+    ok = overlay_asset if overlay_asset is not None else next(iter(overlay_item.data))
+    oarr = overlay_item.data[ok].values
+    overlay_item.unload()
+
+    bcmap = _get_cmap(base_cmap)
+    bnorm = np.clip((barr - base_vmin) / (base_vmax - base_vmin + 1e-10), 0, 1)
+    rgb = bcmap(bnorm)[:, :, :3].astype(np.float32)
+
+    mask = oarr > overlay_threshold
+    if mask.any():
+        ocmap = _get_cmap(overlay_cmap)
+        onorm = np.clip(oarr, 0, 1)
+        orgb = ocmap(onorm)[:, :, :3].astype(np.float32)
+        rgb[mask] = (1 - overlay_alpha) * rgb[mask] + overlay_alpha * orgb[mask]
+
+    return rgb, base_item.label
+
+
 def dual_panel_frames(
     left: xr.DataArray,
     right: xr.DataArray,
