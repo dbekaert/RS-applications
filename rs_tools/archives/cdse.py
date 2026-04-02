@@ -94,7 +94,40 @@ def configure_gdal_cdse_s3() -> None:
 
     headers = {"Authorization": f"Bearer {token}"}
     resp = requests.post(CDSE_S3_KEYS_URL, headers=headers, timeout=30)
-    resp.raise_for_status()
+
+    # 403 often means the maximum number of S3 key-pairs has been
+    # reached (CDSE allows ~2).  Delete the oldest key and retry.
+    if resp.status_code == 403:
+        logger.warning(
+            "S3 key creation returned 403 (max credentials reached) "
+            "— deleting oldest key and retrying"
+        )
+        list_resp = requests.get(CDSE_S3_KEYS_URL, headers=headers, timeout=30)
+        if list_resp.status_code == 200:
+            payload = list_resp.json()
+            existing = payload if isinstance(payload, list) else payload.get("credentials", [])
+            if existing:
+                oldest_id = existing[-1]["access_id"]
+                del_resp = requests.delete(
+                    f"{CDSE_S3_KEYS_URL}/access_id/{oldest_id}",
+                    headers=headers, timeout=30,
+                )
+                logger.info(
+                    "Deleted CDSE S3 key %s… (status %d)",
+                    oldest_id[:8], del_resp.status_code,
+                )
+                time.sleep(1)
+                # Retry creation
+                resp = requests.post(CDSE_S3_KEYS_URL, headers=headers, timeout=30)
+                resp.raise_for_status()
+            else:
+                resp.raise_for_status()
+        else:
+            resp.raise_for_status()
+
+    else:
+        resp.raise_for_status()
+
     creds = resp.json()
     logger.info("Temporary CDSE S3 credentials created (access_id=%s…)",
                 creds["access_id"][:8])
