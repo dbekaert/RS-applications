@@ -54,8 +54,8 @@ def _dekad_of_date(dt: datetime) -> int:
 
 
 def _dekad_label(dt: datetime) -> str:
-    """Return a compact dekad label, e.g. ``'2022-07-D2'``."""
-    return f"{dt:%Y-%m}-D{_dekad_of_date(dt)}"
+    """Return a compact dekad label, e.g. ``'2022-07 Dekad 2'``."""
+    return f"{dt:%Y-%m} Dekad {_dekad_of_date(dt)}"
 
 
 def _is_global_dataset(short_name: str) -> bool:
@@ -95,7 +95,6 @@ class LoadedItem:
         parts = [self.platform]
 
         if self._is_global_item():
-            parts.append(self.datetime.strftime("%Y-%m-%d"))
             parts.append(_dekad_label(self.datetime))
         else:
             if self.orbit_direction:
@@ -218,6 +217,16 @@ class LoadedItem:
                     raise RuntimeError(
                         f"Corrupt GeoTIFF (empty): {tif_path}"
                     )
+                # Apply scale/offset to convert raw DN to physical
+                # values (e.g. CLMS NDVI uint8 0-250 → float -0.08..0.92).
+                scale = da.attrs.get("scale_factor")
+                offset = da.attrs.get("add_offset")
+                if scale is not None or offset is not None:
+                    s = float(scale) if scale is not None else 1.0
+                    o = float(offset) if offset is not None else 0.0
+                    da = da * s + o
+                    da.attrs.pop("scale_factor", None)
+                    da.attrs.pop("add_offset", None)
                 self.data[asset_name] = da
         return self
 

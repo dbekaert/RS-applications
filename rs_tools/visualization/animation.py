@@ -258,7 +258,7 @@ def save_timeseries_gif_lazy(
     figsize: Tuple[int, int] = (8, 8),
     dpi: int = 100,
     lossy: int = 30,
-    max_pixels: int = 1200,
+    max_pixels: int = 2400,
 ) -> Path:
     """Render and save GIF frames one at a time to minimise peak memory.
 

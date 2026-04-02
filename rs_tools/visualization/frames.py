@@ -92,7 +92,7 @@ def make_colormap_composite(
     vmin: float = 0.0,
     vmax: float = 1.0,
     asset: Optional[str] = None,
-    max_pixels: int = 1200,
+    max_pixels: int = 2400,
 ) -> Tuple[np.ndarray, str]:
     """Convert a single :class:`~rs_tools.datasets.loader.LoadedItem` to an RGB frame.
 
@@ -151,7 +151,7 @@ def make_dual_panel_composite(
     left_asset: Optional[str] = None,
     right_asset: Optional[str] = None,
     gap_px: int = 4,
-    max_pixels: int = 1200,
+    max_pixels: int = 2400,
 ) -> Tuple[np.ndarray, str]:
     """Build a side-by-side RGB frame from two :class:`LoadedItem` objects.
 
@@ -237,7 +237,7 @@ def make_overlay_composite(
     overlay_alpha: float = 0.6,
     base_asset: Optional[str] = None,
     overlay_asset: Optional[str] = None,
-    max_pixels: int = 1200,
+    max_pixels: int = 2400,
 ) -> Tuple[np.ndarray, str]:
     """Composite an overlay on a base product from two :class:`LoadedItem` objects.
 
