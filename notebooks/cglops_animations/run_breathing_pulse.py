@@ -21,6 +21,7 @@ from rs_tools.config import BoundingBox
 from rs_tools.datasets.loader import load_dataset, load_passes_from_disk
 from rs_tools.visualization.animation import save_timeseries_gif_lazy
 from rs_tools.visualization.frames import make_colormap_composite
+from rs_tools.visualization.clms_colormaps import CLMS_NDVI, NDVI_VMIN, NDVI_VMAX
 
 # Working directory for downloaded data
 DATA_DIR = "/home/bekaertd/RS_applications/Applications/CGOPS/breathing_pulse"
@@ -70,7 +71,7 @@ def main() -> None:
     gif_name = f"breathing_pulse_ndvi_D{suffix}.gif"
 
     print("Saving GIF (lazy — one frame at a time) …")
-    ndvi_composite = partial(make_colormap_composite, cmap="YlGn", vmin=0, vmax=0.9)
+    ndvi_composite = partial(make_colormap_composite, cmap=CLMS_NDVI, vmin=NDVI_VMIN, vmax=NDVI_VMAX)
 
     gif_path = save_timeseries_gif_lazy(
         items,

@@ -20,6 +20,7 @@ from rs_tools.config import BoundingBox
 from rs_tools.datasets.loader import load_dataset, load_passes_from_disk
 from rs_tools.visualization.animation import save_timeseries_gif_lazy
 from rs_tools.visualization.frames import make_overlay_composite
+from rs_tools.visualization.clms_colormaps import CLMS_NDVI, NDVI_VMIN, NDVI_VMAX, CLMS_BA
 
 DATA_DIR = "/home/bekaertd/RS_applications/Applications/CGOPS/fire_recovery"
 
@@ -65,8 +66,8 @@ def main() -> None:
 
     overlay_composite = partial(
         make_overlay_composite,
-        base_cmap="YlGn", overlay_cmap="Reds",
-        base_vmin=0, base_vmax=0.9,
+        base_cmap=CLMS_NDVI, overlay_cmap=CLMS_BA,
+        base_vmin=NDVI_VMIN, base_vmax=NDVI_VMAX,
         overlay_threshold=0.1, overlay_alpha=0.7,
     )
 

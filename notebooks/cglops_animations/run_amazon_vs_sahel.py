@@ -20,6 +20,7 @@ from rs_tools.config import BoundingBox
 from rs_tools.datasets.loader import load_dataset, load_passes_from_disk
 from rs_tools.visualization.animation import save_timeseries_gif_lazy
 from rs_tools.visualization.frames import make_dual_panel_composite
+from rs_tools.visualization.clms_colormaps import CLMS_NDVI, NDVI_VMIN, NDVI_VMAX
 
 DATA_DIR = "/home/bekaertd/RS_applications/Applications/CGOPS/amazon_vs_sahel"
 
@@ -66,9 +67,9 @@ def main() -> None:
 
     dual_composite = partial(
         make_dual_panel_composite,
-        left_cmap="YlGn", right_cmap="YlGn",
-        left_vmin=0, left_vmax=0.9,
-        right_vmin=0, right_vmax=0.9,
+        left_cmap=CLMS_NDVI, right_cmap=CLMS_NDVI,
+        left_vmin=NDVI_VMIN, left_vmax=NDVI_VMAX,
+        right_vmin=NDVI_VMIN, right_vmax=NDVI_VMAX,
         left_label="Amazon", right_label="Sahel",
     )
 

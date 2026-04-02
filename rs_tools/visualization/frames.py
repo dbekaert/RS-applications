@@ -15,8 +15,10 @@ import numpy as np
 import xarray as xr
 
 
-def _get_cmap(name: str):
-    """Get a colormap by name, compatible with old and new matplotlib."""
+def _get_cmap(name):
+    """Get a colormap by name or return an existing ``Colormap`` object."""
+    if isinstance(name, mpl.colors.Colormap):
+        return name
     return mpl.colormaps[name]
 
 

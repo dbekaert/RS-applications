@@ -21,6 +21,7 @@ from rs_tools.config import BoundingBox
 from rs_tools.datasets.loader import load_dataset, load_passes_from_disk
 from rs_tools.visualization.animation import save_timeseries_gif_lazy
 from rs_tools.visualization.frames import make_dual_panel_composite
+from rs_tools.visualization.clms_colormaps import CLMS_SWI, SWI_VMIN, SWI_VMAX, CLMS_ETA, ETA_VMIN, ETA_VMAX
 
 DATA_DIR = "/home/bekaertd/RS_applications/Applications/CGOPS/drought_pulse"
 
@@ -66,9 +67,9 @@ def main() -> None:
 
     dual_composite = partial(
         make_dual_panel_composite,
-        left_cmap="YlGnBu", right_cmap="YlOrRd",
-        left_vmin=10, left_vmax=90,
-        right_vmin=0, right_vmax=5,
+        left_cmap=CLMS_SWI, right_cmap=CLMS_ETA,
+        left_vmin=SWI_VMIN, left_vmax=SWI_VMAX,
+        right_vmin=ETA_VMIN, right_vmax=ETA_VMAX,
         left_label="SWI", right_label="ETA",
     )
 

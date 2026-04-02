@@ -20,6 +20,7 @@ from rs_tools.config import BoundingBox
 from rs_tools.datasets.loader import load_dataset, load_passes_from_disk
 from rs_tools.visualization.animation import save_timeseries_gif_lazy
 from rs_tools.visualization.frames import make_dual_panel_composite
+from rs_tools.visualization.clms_colormaps import CLMS_GPP, GPP_VMIN, GPP_VMAX, CLMS_NPP, NPP_VMIN, NPP_VMAX
 
 DATA_DIR = "/home/bekaertd/RS_applications/Applications/CGOPS/carbon_engine"
 
@@ -65,9 +66,9 @@ def main() -> None:
 
     dual_composite = partial(
         make_dual_panel_composite,
-        left_cmap="YlGn", right_cmap="YlOrBr",
-        left_vmin=0, left_vmax=16,
-        right_vmin=-2, right_vmax=10,
+        left_cmap=CLMS_GPP, right_cmap=CLMS_NPP,
+        left_vmin=GPP_VMIN, left_vmax=GPP_VMAX,
+        right_vmin=NPP_VMIN, right_vmax=NPP_VMAX,
         left_label="GPP", right_label="NPP",
     )
 

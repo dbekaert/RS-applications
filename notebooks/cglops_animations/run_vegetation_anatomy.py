@@ -25,6 +25,7 @@ from rs_tools.config import BoundingBox
 from rs_tools.datasets.loader import load_dataset, load_passes_from_disk, items_to_dataarray
 from rs_tools.visualization.animation import save_timeseries_gif
 from rs_tools.visualization.frames import product_cycle_frames
+from rs_tools.visualization.clms_colormaps import CLMS_COLORMAPS, CLMS_VMINS, CLMS_VMAXS
 
 DATA_DIR = "/home/bekaertd/RS_applications/Applications/CGOPS/vegetation_anatomy"
 
@@ -69,9 +70,9 @@ def main() -> None:
         product_dict[label] = items_to_dataarray(items)
         print(f"  {label}: {product_dict[label].sizes}")
 
-    cmaps = {"NDVI": "YlGn", "LAI": "Greens", "FAPAR": "YlGn", "FCOVER": "BuGn"}
-    vmins = {"NDVI": 0, "LAI": 0, "FAPAR": 0, "FCOVER": 0}
-    vmaxs = {"NDVI": 0.9, "LAI": 6, "FAPAR": 0.8, "FCOVER": 0.7}
+    cmaps = {k: CLMS_COLORMAPS[k] for k in products}
+    vmins = {k: CLMS_VMINS[k] for k in products}
+    vmaxs = {k: CLMS_VMAXS[k] for k in products}
 
     ref_da = product_dict["NDVI"]
     all_frames = []
