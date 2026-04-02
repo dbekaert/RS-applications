@@ -14,19 +14,45 @@ import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
 from PIL import Image
+from rasterio.enums import Resampling
+from rasterio.io import MemoryFile
+from rasterio.transform import from_bounds
 
 
 def _downsample_2d(arr: np.ndarray, max_pixels: int) -> np.ndarray:
-    """Downsample a 2-D array so max(H, W) <= *max_pixels* using area averaging."""
+    """Downsample a 2-D float32 array so max(H, W) <= *max_pixels*.
+
+    Uses GDAL (via rasterio) with ``Resampling.average`` so that NaN /
+    nodata pixels are excluded from the averaging kernel automatically,
+    preserving spatial coverage without the NaN-bleeding artefacts that
+    PIL's LANCZOS filter produces.
+    """
     h, w = arr.shape[:2]
     if max(h, w) <= max_pixels:
         return arr
     scale = max_pixels / max(h, w)
     new_h, new_w = max(1, int(h * scale)), max(1, int(w * scale))
-    # Use PIL for fast area-based downsampling on the single channel
-    img = Image.fromarray(arr.astype(np.float32), mode="F")
-    img = img.resize((new_w, new_h), Image.LANCZOS)
-    return np.asarray(img, dtype=np.float32)
+
+    transform = from_bounds(0, 0, w, h, w, h)
+    with MemoryFile() as memfile:
+        with memfile.open(
+            driver="GTiff",
+            height=h,
+            width=w,
+            count=1,
+            dtype="float32",
+            transform=transform,
+            nodata=np.nan,
+        ) as dst:
+            dst.write(arr.astype(np.float32), 1)
+
+        with memfile.open() as src:
+            result = src.read(
+                1,
+                out_shape=(new_h, new_w),
+                resampling=Resampling.average,
+            )
+    return result.astype(np.float32)
 
 
 def _get_cmap(name):
