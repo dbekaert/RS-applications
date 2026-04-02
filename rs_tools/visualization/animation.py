@@ -234,6 +234,19 @@ def save_timeseries_gif(
 # Lazy / incremental GIF writing (one frame at a time)
 # ---------------------------------------------------------------------------
 
+def _downsample_rgb(rgb: np.ndarray, max_pixels: int) -> np.ndarray:
+    """Downsample an (H, W, 3) array so max(H, W) <= *max_pixels*."""
+    h, w = rgb.shape[:2]
+    if max(h, w) <= max_pixels:
+        return rgb
+    scale = max_pixels / max(h, w)
+    new_h, new_w = int(h * scale), int(w * scale)
+    # Use PIL for fast high-quality downsampling
+    img = Image.fromarray((np.clip(rgb, 0, 1) * 255).astype(np.uint8))
+    img = img.resize((new_w, new_h), Image.LANCZOS)
+    return np.asarray(img, dtype=np.float32) / 255.0
+
+
 def save_timeseries_gif_lazy(
     items: Iterable,
     output_path: Union[str, Path],
@@ -245,6 +258,7 @@ def save_timeseries_gif_lazy(
     figsize: Tuple[int, int] = (8, 8),
     dpi: int = 100,
     lossy: int = 30,
+    max_pixels: int = 1200,
 ) -> Path:
     """Render and save GIF frames one at a time to minimise peak memory.
 
@@ -276,6 +290,10 @@ def save_timeseries_gif_lazy(
         Resolution for rendering.
     lossy : int
         Lossy compression level for ``gifsicle`` (0 = lossless).
+    max_pixels : int
+        Maximum dimension (height or width) of the composited frame
+        in pixels.  Larger composites are downsampled before rendering
+        to keep memory usage bounded.  Set to 0 to disable.
 
     Returns
     -------
@@ -295,6 +313,8 @@ def save_timeseries_gif_lazy(
     try:
         for item in items:
             rgb, label = composite_fn(item)
+            if max_pixels and max(rgb.shape[:2]) > max_pixels:
+                rgb = _downsample_rgb(rgb, max_pixels)
             img = _render_frame(
                 rgb,
                 label=label,

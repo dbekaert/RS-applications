@@ -13,6 +13,20 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
+from PIL import Image
+
+
+def _downsample_2d(arr: np.ndarray, max_pixels: int) -> np.ndarray:
+    """Downsample a 2-D array so max(H, W) <= *max_pixels* using area averaging."""
+    h, w = arr.shape[:2]
+    if max(h, w) <= max_pixels:
+        return arr
+    scale = max_pixels / max(h, w)
+    new_h, new_w = max(1, int(h * scale)), max(1, int(w * scale))
+    # Use PIL for fast area-based downsampling on the single channel
+    img = Image.fromarray(arr.astype(np.float32), mode="F")
+    img = img.resize((new_w, new_h), Image.LANCZOS)
+    return np.asarray(img, dtype=np.float32)
 
 
 def _get_cmap(name):
@@ -78,6 +92,7 @@ def make_colormap_composite(
     vmin: float = 0.0,
     vmax: float = 1.0,
     asset: Optional[str] = None,
+    max_pixels: int = 1200,
 ) -> Tuple[np.ndarray, str]:
     """Convert a single :class:`~rs_tools.datasets.loader.LoadedItem` to an RGB frame.
 
@@ -90,11 +105,14 @@ def make_colormap_composite(
     item : LoadedItem
         A dataset item (may be on disk or already loaded).
     cmap : str
-        Matplotlib colormap name.
+        Matplotlib colormap name or ``Colormap`` object.
     vmin, vmax : float
         Colour-scale limits.
     asset : str, optional
         Asset key to use.  When *None*, the first available key is used.
+    max_pixels : int
+        If the raster's longest side exceeds this, downsample before
+        applying the colourmap.  Set to 0 to disable.
 
     Returns
     -------
@@ -107,6 +125,9 @@ def make_colormap_composite(
     key = asset if asset is not None else next(iter(item.data))
     arr = item.data[key].values
     item.unload()
+
+    if max_pixels and max(arr.shape[:2]) > max_pixels:
+        arr = _downsample_2d(arr, max_pixels)
 
     colormap = _get_cmap(cmap)
     norm = np.clip((arr - vmin) / (vmax - vmin + 1e-10), 0, 1)
@@ -130,6 +151,7 @@ def make_dual_panel_composite(
     left_asset: Optional[str] = None,
     right_asset: Optional[str] = None,
     gap_px: int = 4,
+    max_pixels: int = 1200,
 ) -> Tuple[np.ndarray, str]:
     """Build a side-by-side RGB frame from two :class:`LoadedItem` objects.
 
@@ -165,6 +187,9 @@ def make_dual_panel_composite(
     larr = left_item.data[lk].values
     left_item.unload()
 
+    if max_pixels and max(larr.shape[:2]) > max_pixels:
+        larr = _downsample_2d(larr, max_pixels)
+
     lcmap = _get_cmap(left_cmap)
     lnorm = np.clip((larr - left_vmin) / (left_vmax - left_vmin + 1e-10), 0, 1)
     del larr
@@ -175,6 +200,9 @@ def make_dual_panel_composite(
     rk = right_asset if right_asset is not None else next(iter(right_item.data))
     rarr = right_item.data[rk].values
     right_item.unload()
+
+    if max_pixels and max(rarr.shape[:2]) > max_pixels:
+        rarr = _downsample_2d(rarr, max_pixels)
 
     rcmap = _get_cmap(right_cmap)
     rnorm = np.clip((rarr - right_vmin) / (right_vmax - right_vmin + 1e-10), 0, 1)
@@ -209,6 +237,7 @@ def make_overlay_composite(
     overlay_alpha: float = 0.6,
     base_asset: Optional[str] = None,
     overlay_asset: Optional[str] = None,
+    max_pixels: int = 1200,
 ) -> Tuple[np.ndarray, str]:
     """Composite an overlay on a base product from two :class:`LoadedItem` objects.
 
@@ -242,6 +271,9 @@ def make_overlay_composite(
     barr = base_item.data[bk].values
     base_item.unload()
 
+    if max_pixels and max(barr.shape[:2]) > max_pixels:
+        barr = _downsample_2d(barr, max_pixels)
+
     bcmap = _get_cmap(base_cmap)
     bnorm = np.clip((barr - base_vmin) / (base_vmax - base_vmin + 1e-10), 0, 1)
     del barr
@@ -252,6 +284,9 @@ def make_overlay_composite(
     ok = overlay_asset if overlay_asset is not None else next(iter(overlay_item.data))
     oarr = overlay_item.data[ok].values
     overlay_item.unload()
+
+    if max_pixels and max(oarr.shape[:2]) > max_pixels:
+        oarr = _downsample_2d(oarr, max_pixels)
 
     mask = oarr > overlay_threshold
     if mask.any():
