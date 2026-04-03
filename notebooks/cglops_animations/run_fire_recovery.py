@@ -44,14 +44,14 @@ def main() -> None:
     load_dataset(
         "CLMS_NDVI_V3", bbox=bbox,
         start_date="2020-01-01", end_date="2026-03-01",
-        limit=150, output_dir=f"{DATA_DIR}/ndvi", dekads=dekads,
+        limit=500, output_dir=f"{DATA_DIR}/ndvi", dekads=dekads,
     )
 
     print("Loading CLMS Burnt Area v4 (monthly) from CDSE …")
     load_dataset(
         "CLMS_BA_V4_MONTHLY", bbox=bbox,
         start_date="2020-01-01", end_date="2026-03-01",
-        limit=50, output_dir=f"{DATA_DIR}/ba", dekads=dekads,
+        limit=500, output_dir=f"{DATA_DIR}/ba", dekads=dekads,
     )
 
     ndvi_items = load_passes_from_disk(f"{DATA_DIR}/ndvi", dekads=dekads)

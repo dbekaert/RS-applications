@@ -45,14 +45,14 @@ def main() -> None:
     load_dataset(
         "CLMS_NDVI_V3", bbox=bbox_amazon,
         start_date="2020-01-01", end_date="2026-03-01",
-        limit=150, output_dir=f"{DATA_DIR}/amazon", dekads=dekads,
+        limit=500, output_dir=f"{DATA_DIR}/amazon", dekads=dekads,
     )
 
     print("Loading CLMS NDVI v3 for Sahel …")
     load_dataset(
         "CLMS_NDVI_V3", bbox=bbox_sahel,
         start_date="2020-01-01", end_date="2026-03-01",
-        limit=150, output_dir=f"{DATA_DIR}/sahel", dekads=dekads,
+        limit=500, output_dir=f"{DATA_DIR}/sahel", dekads=dekads,
     )
 
     amazon_items = load_passes_from_disk(f"{DATA_DIR}/amazon", dekads=dekads)

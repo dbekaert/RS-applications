@@ -54,7 +54,7 @@ def main() -> None:
         bbox=bbox,
         start_date="2020-01-01",
         end_date="2026-03-01",
-        limit=150,
+        limit=500,
         output_dir=DATA_DIR,
         dekads=dekads,
     )

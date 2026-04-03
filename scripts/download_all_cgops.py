@@ -24,7 +24,7 @@ BASE_DIR = "/home/bekaertd/RS_applications/Applications/CGOPS"
 # Shared parameters
 START = "2020-01-01"
 END = "2026-03-01"
-LIMIT = 150
+LIMIT = 500
 
 # Bounding boxes
 BBOX_EUROPE = BoundingBox(west=-10, south=35, east=25, north=60)
@@ -61,7 +61,7 @@ TASKS = [
     ("fire_recovery/NDVI", "CLMS_NDVI_V3", BBOX_IBERIA,
      f"{BASE_DIR}/fire_recovery/ndvi", LIMIT),
     ("fire_recovery/BA", "CLMS_BA_V4_MONTHLY", BBOX_IBERIA,
-     f"{BASE_DIR}/fire_recovery/ba", 50),
+     f"{BASE_DIR}/fire_recovery/ba", LIMIT),
 
     # vegetation_anatomy — NDVI, LAI, FAPAR, FCOVER over Western Europe
     ("vegetation_anatomy/NDVI", "CLMS_NDVI_V3", BBOX_EUROPE,

@@ -44,14 +44,14 @@ def main() -> None:
     load_dataset(
         "CLMS_GPP_V2", bbox=bbox,
         start_date="2020-01-01", end_date="2026-03-01",
-        limit=150, output_dir=f"{DATA_DIR}/gpp", dekads=dekads,
+        limit=500, output_dir=f"{DATA_DIR}/gpp", dekads=dekads,
     )
 
     print("Loading CLMS NPP v2 from CDSE …")
     load_dataset(
         "CLMS_NPP_V2", bbox=bbox,
         start_date="2020-01-01", end_date="2026-03-01",
-        limit=150, output_dir=f"{DATA_DIR}/npp", dekads=dekads,
+        limit=500, output_dir=f"{DATA_DIR}/npp", dekads=dekads,
     )
 
     gpp_items = load_passes_from_disk(f"{DATA_DIR}/gpp", dekads=dekads)

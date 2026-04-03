@@ -58,7 +58,7 @@ def main() -> None:
         load_dataset(
             short_name, bbox=bbox,
             start_date="2020-01-01", end_date="2026-03-01",
-            limit=150, output_dir=f"{DATA_DIR}/{label.lower()}",
+            limit=500, output_dir=f"{DATA_DIR}/{label.lower()}",
             dekads=dekads,
         )
         items = load_passes_from_disk(

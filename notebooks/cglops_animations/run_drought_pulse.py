@@ -45,14 +45,14 @@ def main() -> None:
     load_dataset(
         "CLMS_SWI_V4", bbox=bbox,
         start_date="2020-01-01", end_date="2026-03-01",
-        limit=150, output_dir=f"{DATA_DIR}/swi", dekads=dekads,
+        limit=500, output_dir=f"{DATA_DIR}/swi", dekads=dekads,
     )
 
     print("Loading CLMS ETA v1 from CDSE …")
     load_dataset(
         "CLMS_ETA_V1", bbox=bbox,
         start_date="2020-01-01", end_date="2026-03-01",
-        limit=150, output_dir=f"{DATA_DIR}/eta", dekads=dekads,
+        limit=500, output_dir=f"{DATA_DIR}/eta", dekads=dekads,
     )
 
     swi_items = load_passes_from_disk(f"{DATA_DIR}/swi", dekads=dekads)
