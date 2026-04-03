@@ -219,6 +219,18 @@ def _clms_cog_assets(product_name: str, s3_path: str) -> Dict[str, Any]:
     dict
         STAC-style assets dict with at least a ``"data"`` key whose
         ``href`` is a ``/vsis3/`` URL pointing to the primary band COG.
+
+    Notes
+    -----
+    CLMS COG directories contain TIFFs whose name inserts the band
+    identifier between the numeric resolution and any processing suffix:
+
+    * ``NDVI300``        → ``NDVI300-NDVI``
+    * ``GPP300-RT6``     → ``GPP300-GPP-RT6``
+    * ``LAI300-RT6``     → ``LAI300-LAI-RT6``
+    * ``BA300-NTC``      → ``BA300-BA-NTC``
+    * ``SWI``            → ``SWI-SWI001``  (special case)
+    * ``ETA300``         → ``ETA300-ETA-ENSEMBLE``  (special case)
     """
     # Strip _cog suffix to get the base name used in individual TIFFs
     base = product_name
@@ -229,22 +241,35 @@ def _clms_cog_assets(product_name: str, s3_path: str) -> Dict[str, Any]:
     parts = base.split("_")
     product_code = parts[2] if len(parts) >= 3 else ""
 
-    # Primary band name: strip trailing digits from the product code
-    primary_band = re.sub(r"\d+$", "", product_code)
+    # Band insertion: the band name is the leading alphabetic portion.
+    # Split code into: alpha prefix + digits + optional "-SUFFIX"
+    m = re.match(r"^([A-Za-z]+)(\d*)(-.*)?$", product_code)
+    if m:
+        alpha, digits, suffix = m.group(1), m.group(2), m.group(3) or ""
+        band_name = alpha  # e.g. "NDVI", "GPP", "LAI", "BA"
+        # Compose: <alpha><digits>-<band_name><suffix>
+        tiff_code = f"{alpha}{digits}-{band_name}{suffix}"
+    else:
+        tiff_code = product_code
+
+    # Special overrides for products with non-standard band names
+    _BAND_OVERRIDES = {
+        "SWI": "SWI-SWI001",
+        "ETA300": "ETA300-ETA-ENSEMBLE",
+    }
+    if product_code in _BAND_OVERRIDES:
+        tiff_code = _BAND_OVERRIDES[product_code]
 
     # S3 path → /vsis3/ URL:  /eodata/CLMS/… → /vsis3/eodata/CLMS/…
     vsis3_base = "/vsis3" + s3_path
 
-    if primary_band:
-        tiff_name = base.replace(product_code, f"{product_code}-{primary_band}") + ".tiff"
-    else:
-        tiff_name = base + ".tiff"
+    tiff_name = base.replace(product_code, tiff_code, 1) + ".tiff"
 
     return {
         "data": {
             "href": f"{vsis3_base}/{tiff_name}",
             "type": "image/tiff",
-            "title": primary_band or "data",
+            "title": (m.group(1) if m else "data"),
         },
     }
 
