@@ -950,6 +950,44 @@ def _group_items_by_pass(
     return dict(groups)
 
 
+def _filter_stac_items_by_dekad(
+    items: List[Dict[str, Any]],
+    dekads: Optional[Union[int, List[int]]],
+) -> List[Dict[str, Any]]:
+    """Pre-filter raw STAC items by dekad BEFORE downloading.
+
+    Parses the datetime from the STAC item properties and drops items
+    whose dekad is not in *dekads*.  This avoids downloading data that
+    will be discarded later.
+    """
+    if dekads is None:
+        return items
+    if isinstance(dekads, int):
+        dekads = [dekads]
+
+    filtered = []
+    for item in items:
+        dt_str = (
+            item.get("properties", {}).get("datetime")
+            or item.get("properties", {}).get("start_datetime", "")
+        )
+        if not dt_str:
+            filtered.append(item)  # keep if no datetime to check
+            continue
+        try:
+            dt = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
+            if _dekad_of_date(dt) in dekads:
+                filtered.append(item)
+        except (ValueError, TypeError):
+            filtered.append(item)  # keep if datetime unparseable
+
+    n_dropped = len(items) - len(filtered)
+    if n_dropped:
+        print(f"  Pre-filtered to dekad(s) {dekads}: kept {len(filtered)}, "
+              f"dropped {n_dropped} before download")
+    return filtered
+
+
 def _filter_by_dekad(
     items: List[LoadedItem],
     dekads: Optional[Union[int, List[int]]],
@@ -1362,6 +1400,11 @@ def load_dataset(
         print(f"Found {len(items)} items for {short_name} in {archive}")
         if not items:
             return []
+        # Pre-filter by dekad BEFORE downloading to avoid fetching
+        # data that will be discarded.
+        items = _filter_stac_items_by_dekad(items, dekads)
+        if not items:
+            return []
         result = _configure_and_load(
             archive, items, assets, bbox, mosaic, chunks,
             ds_info, short_name, output_dir=output_dir,
@@ -1394,6 +1437,11 @@ def load_dataset(
 
     print(f"Found {len(items)} items for {short_name} in {archive}")
 
+    if not items:
+        return []
+
+    # Pre-filter by dekad BEFORE downloading
+    items = _filter_stac_items_by_dekad(items, dekads)
     if not items:
         return []
 
