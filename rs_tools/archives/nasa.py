@@ -46,6 +46,9 @@ _DATASET_MAP: Dict[str, Dict[str, Any]] = {
         "dataset": "ARIA S1 GUNW",
         "processingLevel": "GUNW_STD",
     },
+    "S1_SLC_BURST": {
+        "dataset": "SLC-BURST",
+    },
 }
 
 
@@ -97,6 +100,15 @@ def _scene_to_stac_item(scene) -> Dict[str, Any]:
         elif fname.endswith("_HH.tif"):
             asset_key = "HH"
         elif fname.endswith("_HV.tif"):
+            asset_key = "HV"
+        # SLC-BURST: polarization in middle of filename
+        elif "_VV_" in fname:
+            asset_key = "VV"
+        elif "_VH_" in fname:
+            asset_key = "VH"
+        elif "_HH_" in fname:
+            asset_key = "HH"
+        elif "_HV_" in fname:
             asset_key = "HV"
         else:
             # Generic — use filename without scene prefix as key
@@ -277,8 +289,46 @@ def download_nasa_asset(href: str, cache_dir: Optional[str] = None) -> str:
     return local_path
 
 
+def _merge_slc_burst_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Merge SLC-BURST items that differ only by polarization.
+
+    ASF returns separate scenes for each polarization channel (VV, VH)
+    of the same burst.  This function merges them into single STAC-like
+    items with both polarizations as separate assets.
+    """
+    from collections import OrderedDict
+
+    groups: Dict[str, Dict[str, Any]] = OrderedDict()
+    for item in items:
+        item_id = item.get("id", "")
+        # Build a merge key by neutralising the polarization token
+        merge_key = item_id
+        for pol in ("_VV_", "_VH_", "_HH_", "_HV_"):
+            merge_key = merge_key.replace(pol, "_XX_")
+
+        if merge_key in groups:
+            groups[merge_key]["assets"].update(item.get("assets", {}))
+        else:
+            groups[merge_key] = {
+                **item,
+                "assets": dict(item.get("assets", {})),
+            }
+
+    merged = list(groups.values())
+    n_merged = len(items) - len(merged)
+    if n_merged > 0:
+        logger.info(
+            "Merged %d SLC-BURST polarisation pairs → %d items",
+            len(items), len(merged),
+        )
+    return merged
+
+
 class NASAArchive(BaseArchive):
-    """Interface to NASA ASF archive via ``asf_search``."""
+    """Interface to NASA ASF archive via ``asf_search``.
+
+    Supports OPERA RTC, ARIA GUNW, and Sentinel-1 SLC-BURST products.
+    """
 
     name = "nasa"
 
@@ -316,7 +366,8 @@ class NASAArchive(BaseArchive):
             mapping = _DATASET_MAP.get(coll, {})
             if mapping:
                 search_kwargs["dataset"] = mapping["dataset"]
-                search_kwargs["processingLevel"] = mapping["processingLevel"]
+                if "processingLevel" in mapping:
+                    search_kwargs["processingLevel"] = mapping["processingLevel"]
             else:
                 search_kwargs["dataset"] = coll
 
@@ -324,4 +375,9 @@ class NASAArchive(BaseArchive):
         logger.info("ASF search returned %d scenes.", len(results))
 
         items = [_scene_to_stac_item(r) for r in results]
+
+        # SLC-BURST: merge items that differ only by polarization
+        if config.collections and config.collections[0] == "S1_SLC_BURST":
+            items = _merge_slc_burst_items(items)
+
         return items

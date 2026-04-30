@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 _DEFAULT_ASSETS: Dict[str, List[str]] = {
     "OPERA_RTC_S1": ["VV", "VH"],
     "OPERA_RTC_S1_STATIC": ["mask"],
+    "S1_SLC_BURST": ["VV"],
 }
 
 _SENSOR_NAMES = {
@@ -916,6 +917,10 @@ def _group_items_by_pass(
     together.  Only OPERA item IDs are routed through
     :func:`parse_opera_rtc_id`.
 
+    For **Sentinel-1 SLC-BURST** items the key is
+    ``"BURST_YYYY-MM-DD_HHMM_ORB"`` (date + orbit direction), grouping
+    all bursts from the same satellite pass.
+
     For **global CLMS** products each item is its own "pass",
     keyed by ``"GLOBAL_YYYY-MM-DD_HHMM_DK"`` where DK is the dekad.
     This ensures that :func:`subsample_monthly` and the on-disk
@@ -935,6 +940,16 @@ def _group_items_by_pass(
             acq = parsed.get("acq_time")
             if track is not None and acq is not None:
                 key = f"T{track:03d}_{acq:%Y-%m-%d}"
+                groups[key].append(item)
+                continue
+
+        # SLC-BURST items: group by acquisition datetime + orbit
+        if "BURST" in item_id and not item_id.startswith("OPERA_"):
+            meta = extract_item_metadata(item)
+            dt = meta.get("datetime")
+            if dt is not None:
+                orb = (meta.get("orbit_direction") or "unk")[:3].upper()
+                key = f"BURST_{dt:%Y-%m-%d_%H%M}_{orb}"
                 groups[key].append(item)
                 continue
 

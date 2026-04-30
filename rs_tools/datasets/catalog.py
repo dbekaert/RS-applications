@@ -324,3 +324,24 @@ register(DatasetInfo(
     spatial_resolution="90 m",
     tags=["sar", "aria", "insar", "sentinel-1", "gunw", "interferogram"],
 ))
+
+# ---------------------------------------------------------------------------
+# Sentinel-1 SLC Burst  (NASA ASF)
+#
+# Individual IW SLC burst extracts from ASF's burst archive.
+# Complex-valued (CFloat32) at native IW SLC resolution (~5 x 20 m).
+# Useful for oil-spill detection, coherence analysis, and InSAR.
+# ---------------------------------------------------------------------------
+
+register(DatasetInfo(
+    name="Sentinel-1 SLC Burst",
+    short_name="S1_SLC_BURST",
+    description="Sentinel-1 IW SLC burst extracts from ASF (complex, full resolution).",
+    archive_collections={
+        "nasa": ["S1_SLC_BURST"],
+    },
+    version=None,
+    temporal_resolution="6-12 days",
+    spatial_resolution="5x20 m",
+    tags=["sar", "sentinel-1", "slc", "burst", "complex"],
+))
