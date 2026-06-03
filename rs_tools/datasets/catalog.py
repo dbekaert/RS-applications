@@ -326,6 +326,36 @@ register(DatasetInfo(
 ))
 
 # ---------------------------------------------------------------------------
+# NISAR L2 Products  (NASA ASF — public Beta + private Early Adopter)
+#
+# NISAR GCOV (Geocoded Covariance Matrix) is an L2 product containing
+# geocoded, multi-looked covariance matrix elements in HDF5 format.
+# L-band frequencyA layers: HHHH (HH power), HVHV (HV power).
+# S-band frequencyA layers: VVVV (VV power), VHVH (VH power).
+#
+# Two collections are searched:
+#   public  — NISAR_L2_GCOV_BETA_V1 (open)
+#   ea      — NISAR_EA_L2 (C4052499921-ASF, gated Early Adopter archive)
+# ---------------------------------------------------------------------------
+
+register(DatasetInfo(
+    name="NISAR L2 GCOV",
+    short_name="NISAR_L2_GCOV",
+    description=(
+        "NISAR Geocoded Covariance Matrix (L2 GCOV). "
+        "Contains multi-looked, geocoded covariance terms "
+        "(HHHH, HVHV for L-band; VVVV, VHVH for S-band) in HDF5 format."
+    ),
+    archive_collections={
+        "nasa": ["NISAR_L2_GCOV"],
+    },
+    version="1",
+    temporal_resolution="12 days",
+    spatial_resolution="20-100 m",
+    tags=["sar", "nisar", "gcov", "covariance", "l-band", "s-band", "insar"],
+))
+
+# ---------------------------------------------------------------------------
 # Sentinel-1 SLC Burst  (NASA ASF)
 #
 # Individual IW SLC burst extracts from ASF's burst archive.

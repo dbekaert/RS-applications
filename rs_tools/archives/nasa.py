@@ -28,6 +28,9 @@ from rs_tools.config import SearchConfig
 
 logger = logging.getLogger(__name__)
 
+# NISAR Early Adopter L2 collection (gated; covers GCOV, GUNW, …)
+_NISAR_EA_L2 = "C4052499921-ASF"  # NISAR_EA_L2 (private)
+
 # ASF dataset / processingLevel constants
 _DATASET_MAP: Dict[str, Dict[str, Any]] = {
     "OPERA_L2_RTC-S1_V1": {
@@ -48,6 +51,12 @@ _DATASET_MAP: Dict[str, Dict[str, Any]] = {
     },
     "S1_SLC_BURST": {
         "dataset": "SLC-BURST",
+    },
+    # NISAR L2 GCOV — searched across public Beta + private EA L2 collection
+    "NISAR_L2_GCOV": {
+        "dataset": "NISAR",
+        "processingLevel": "GCOV",
+        "ea_collection": _NISAR_EA_L2,
     },
 }
 
@@ -80,13 +89,33 @@ def _scene_to_stac_item(scene) -> Dict[str, Any]:
     # Collect S3 URLs (product bucket only, not browse)
     s3_urls: Dict[str, str] = {}
     for u in props.get("s3Urls", []):
-        if "opera-products" in u and u.endswith(".tif"):
+        if ("opera-products" in u or "nisar" in u.lower()) and (
+            u.endswith(".tif") or u.endswith(".h5")
+        ):
             s3_urls[os.path.basename(u)] = u
 
     # Build assets by matching filename suffixes
     assets: Dict[str, Dict[str, str]] = {}
     for url in all_urls:
         fname = os.path.basename(url)
+        # HDF5 (e.g. NISAR GCOV, GUNW) — primary file stored as 'data',
+        # QA/statistics companions stored separately to avoid masking the
+        # primary data asset (NISAR products ship a *_QA_STATS.h5 alongside
+        # the main science .h5 file).
+        if fname.endswith(".h5") or fname.endswith(".nc"):
+            asset_entry: Dict[str, str] = {
+                "href": url,
+                "type": "application/x-hdf5",
+            }
+            if fname in s3_urls:
+                asset_entry["alternate"] = s3_urls[fname]
+            # Route companion stats/QA files to a separate key so they never
+            # overwrite the primary science file stored under 'data'.
+            if "STATS" in fname.upper() or "_QA_" in fname.upper():
+                assets["qa_stats"] = asset_entry
+            else:
+                assets["data"] = asset_entry
+            continue
         if not fname.endswith(".tif"):
             continue
         # Detect asset type from filename suffix
@@ -127,12 +156,21 @@ def _scene_to_stac_item(scene) -> Dict[str, Any]:
 
     # Map ASF properties to STAC-like properties
     start_time = props.get("startTime", "")
+    platform = props.get("platform", "")
+    # Derive constellation from platform name (e.g. 'NISAR' or 'Sentinel-1A')
+    _plat_lower = platform.lower()
+    if "nisar" in _plat_lower:
+        constellation = "nisar"
+    elif "sentinel" in _plat_lower:
+        constellation = "sentinel-1"
+    else:
+        constellation = _plat_lower or None
     stac_props: Dict[str, Any] = {
         "datetime": start_time,
         "start_datetime": start_time,
         "end_datetime": props.get("stopTime", ""),
-        "platform": props.get("platform", ""),
-        "constellation": "sentinel-1",
+        "platform": platform,
+        "constellation": constellation,
         "sat:orbit_state": (props.get("flightDirection") or "").lower()
             or None,
         "sat:absolute_orbit": props.get("orbit"),
@@ -327,7 +365,7 @@ def _merge_slc_burst_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 class NASAArchive(BaseArchive):
     """Interface to NASA ASF archive via ``asf_search``.
 
-    Supports OPERA RTC, ARIA GUNW, and Sentinel-1 SLC-BURST products.
+    Supports OPERA RTC, ARIA GUNW, Sentinel-1 SLC-BURST, and NISAR GCOV products.
     """
 
     name = "nasa"
@@ -379,5 +417,32 @@ class NASAArchive(BaseArchive):
         # SLC-BURST: merge items that differ only by polarization
         if config.collections and config.collections[0] == "S1_SLC_BURST":
             items = _merge_slc_burst_items(items)
+
+        # NISAR products: also search Early Adopter (EA) private collection
+        # EA_L2 (C4052499921-ASF) gates access to pre-release NISAR L2 data.
+        # We add EA results when include_ea is True (the default) and the
+        # requested collection has an ea_collection defined.
+        if mapping and mapping.get("ea_collection") and getattr(config, "include_ea", True):
+            ea_kwargs: Dict[str, Any] = {
+                "collections": [mapping["ea_collection"]],
+                "intersectsWith": wkt,
+                "start": f"{config.start_date}T00:00:00Z",
+                "end": f"{config.end_date}T23:59:59Z",
+                "maxResults": config.limit,
+            }
+            if "processingLevel" in mapping:
+                ea_kwargs["processingLevel"] = mapping["processingLevel"]
+            try:
+                ea_results = asf_search.search(**ea_kwargs)
+                logger.info("ASF EA search returned %d scenes.", len(ea_results))
+                ea_items = [_scene_to_stac_item(r) for r in ea_results]
+                # Deduplicate against public items by scene id
+                existing_ids = {it["id"] for it in items}
+                ea_new = [it for it in ea_items if it["id"] not in existing_ids]
+                if ea_new:
+                    logger.info("Adding %d unique EA scenes.", len(ea_new))
+                items.extend(ea_new)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("EA search failed (no access?): %s", exc)
 
         return items

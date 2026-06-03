@@ -46,6 +46,14 @@ class TestCatalog:
         assert "nasa" in ds.archive_collections
         assert "insar" in ds.tags
 
+    def test_nisar_gcov_registered(self):
+        ds = get("NISAR_L2_GCOV")
+        assert ds.short_name == "NISAR_L2_GCOV"
+        assert "nasa" in ds.archive_collections
+        assert "NISAR_L2_GCOV" in ds.archive_collections["nasa"]
+        assert "nisar" in ds.tags
+        assert "gcov" in ds.tags
+
     def test_list_by_tag(self):
         veg = list_datasets(tag="vegetation")
         assert len(veg) >= 3

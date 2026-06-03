@@ -81,6 +81,7 @@ class SearchConfig:
     collections: List[str] = field(default_factory=list)
     max_cloud_cover: Optional[float] = None
     limit: int = 100
+    include_ea: bool = True  # include Early Adopter collections (NISAR)
 
     def __post_init__(self) -> None:
         self.start_date = _to_date(self.start_date)
